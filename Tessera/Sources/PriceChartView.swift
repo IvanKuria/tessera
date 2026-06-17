@@ -122,17 +122,6 @@ struct PriceChartView: View {
                     .lineStyle(StrokeStyle(lineWidth: lineWidth(line)))
                 }
 
-                // Fill only under the primary (Yes) line, and only on binary charts.
-                if !isMulti, line.id == series.first?.id {
-                    ForEach(line.points) { p in
-                        AreaMark(x: .value("Time", p.date), y: .value("Percent", p.percent))
-                            .interpolationMethod(.monotone)
-                            .foregroundStyle(.linearGradient(
-                                colors: [line.color.opacity(0.16), line.color.opacity(0)],
-                                startPoint: .top, endPoint: .bottom))
-                    }
-                }
-
                 if showsDot(line), let last = line.points.last {
                     PointMark(x: .value("Time", last.date), y: .value("Percent", last.percent))
                         .foregroundStyle(line.color.opacity(lineOpacity(line)))
