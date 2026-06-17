@@ -1,77 +1,77 @@
 import SwiftUI
-import KalshiKit
 
-/// The popover shown when the menu-bar item is clicked.
+/// The compact themed popover shown from the menu-bar item.
 struct MenuBarView: View {
     var store: WatchlistStore
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Tessera").font(.headline)
+                Wordmark()
                 Spacer()
-                if store.isLoading { ProgressView().controlSize(.small) }
+                if store.isLoading { ProgressView().controlSize(.small) } else { LiveDot() }
             }
-            Text("Unofficial • live Kalshi odds")
-                .font(.caption).foregroundStyle(.secondary)
+            .padding(.horizontal, 14).padding(.top, 14).padding(.bottom, 10)
 
-            Divider()
+            Divider().overlay(Theme.stroke)
 
-            if let error = store.errorMessage, store.markets.isEmpty {
-                Label(error, systemImage: "exclamationmark.triangle")
-                    .font(.caption).foregroundStyle(.orange)
-            }
-
-            if store.markets.isEmpty {
-                Text("Loading markets…")
-                    .foregroundStyle(.secondary)
+            if store.events.isEmpty {
+                Text(store.errorMessage ?? "Loading markets…")
+                    .font(Theme.body(12)).foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 22)
             } else {
                 ScrollView {
-                    VStack(spacing: 2) {
-                        ForEach(store.markets.prefix(12), id: \.ticker) { market in
-                            MarketRow(market: market)
+                    VStack(spacing: 0) {
+                        ForEach(store.events.prefix(9)) { event in
+                            MenuBarRow(event: event)
+                            Divider().overlay(Theme.stroke.opacity(0.6))
                         }
                     }
                 }
-                .frame(maxHeight: 300)
+                .frame(maxHeight: 320)
             }
 
-            Divider()
-
+            Divider().overlay(Theme.stroke)
             HStack {
-                Button("Open Window") {
+                Button {
                     NSApp.setActivationPolicy(.regular)
                     openWindow(id: "main")
                     NSApp.activate(ignoringOtherApps: true)
+                } label: {
+                    Label("Open Tessera", systemImage: "macwindow")
+                        .font(Theme.body(12, .medium))
                 }
+                .buttonStyle(.plain).foregroundStyle(Theme.mint)
                 Spacer()
-                Button("Quit") { NSApp.terminate(nil) }
+                Button { NSApp.terminate(nil) } label: {
+                    Text("Quit").font(Theme.body(12)).foregroundStyle(Theme.textTertiary)
+                }
+                .buttonStyle(.plain)
             }
-            .font(.callout)
+            .padding(.horizontal, 14).padding(.vertical, 11)
         }
-        .padding(12)
-        .frame(width: 320)
+        .frame(width: 340)
+        .background(Theme.bg)
     }
 }
 
-/// One compact market row: title + implied probability.
-struct MarketRow: View {
-    let market: Market
-
+private struct MenuBarRow: View {
+    let event: EventVM
     var body: some View {
-        HStack(spacing: 8) {
-            Text(market.title ?? market.ticker)
-                .lineLimit(1)
-                .font(.callout)
-            Spacer(minLength: 8)
-            Text(market.impliedPercent.map { "\($0)%" } ?? "—")
-                .monospacedDigit()
-                .font(.callout.weight(.semibold))
-                .foregroundStyle(.tint)
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(event.title)
+                    .font(Theme.body(12.5, .medium)).foregroundStyle(Theme.text)
+                    .lineLimit(1)
+                ProbabilityBar(percent: event.topOutcome?.percent ?? 0, height: 4)
+                    .frame(width: 180)
+            }
+            Spacer(minLength: 6)
+            Text(event.topOutcome?.percent.map { "\($0)%" } ?? "—")
+                .font(Theme.mono(14, .bold)).foregroundStyle(Theme.mint)
         }
-        .padding(.vertical, 2)
+        .padding(.horizontal, 14).padding(.vertical, 9)
     }
 }

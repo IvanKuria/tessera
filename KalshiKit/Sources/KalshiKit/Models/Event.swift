@@ -7,6 +7,9 @@ public struct Event: Codable, Sendable, Hashable, Identifiable {
     public var seriesTicker: String?
     public var title: String
     public var subTitle: String?
+    /// High-level category (e.g. "Politics", "Sports", "Economics") — useful for
+    /// grouping/filtering in a UI.
+    public var category: String?
     public var mutuallyExclusive: Bool?
     /// Present only when the request asks for nested markets.
     public var markets: [Market]?
@@ -19,6 +22,7 @@ public struct Event: Codable, Sendable, Hashable, Identifiable {
         seriesTicker: String? = nil,
         title: String,
         subTitle: String? = nil,
+        category: String? = nil,
         mutuallyExclusive: Bool? = nil,
         markets: [Market]? = nil
     ) {
@@ -26,6 +30,7 @@ public struct Event: Codable, Sendable, Hashable, Identifiable {
         self.seriesTicker = seriesTicker
         self.title = title
         self.subTitle = subTitle
+        self.category = category
         self.mutuallyExclusive = mutuallyExclusive
         self.markets = markets
     }
