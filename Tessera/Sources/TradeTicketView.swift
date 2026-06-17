@@ -28,6 +28,7 @@ struct TradeTicketView: View {
     // Confirmation + result.
     @State private var isConfirming = false
     @State private var placedOrderId: String?
+    @Environment(\.dismiss) private var dismiss
 
     private let panelWidth: CGFloat = 340
 
@@ -84,6 +85,16 @@ struct TradeTicketView: View {
                     .background(
                         Capsule().fill(account.env == .production ? Theme.no.opacity(0.08) : Theme.subtle)
                     )
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Theme.textSecondary)
+                        .frame(width: 24, height: 24)
+                        .background(Circle().fill(Theme.subtle))
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.cancelAction)
             }
             Text(marketTicker)
                 .font(Theme.num(10.5))
@@ -360,15 +371,26 @@ struct TradeTicketView: View {
             Text(orderId)
                 .font(Theme.num(10))
                 .foregroundStyle(Theme.textTertiary)
-            Button {
-                placedOrderId = nil
-                isConfirming = false
-            } label: {
-                Text("Place another")
-                    .font(Theme.ui(13, .medium))
-                    .foregroundStyle(Theme.yes)
+            HStack(spacing: 16) {
+                Button {
+                    placedOrderId = nil
+                    isConfirming = false
+                } label: {
+                    Text("Place another")
+                        .font(Theme.ui(13, .medium))
+                        .foregroundStyle(Theme.yes)
+                }
+                .buttonStyle(.plain)
+                Button { dismiss() } label: {
+                    Text("Done")
+                        .font(Theme.ui(13, .semibold))
+                        .foregroundStyle(Theme.onAccent)
+                        .padding(.horizontal, 16).padding(.vertical, 6)
+                        .background(Capsule().fill(Theme.yes))
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.defaultAction)
             }
-            .buttonStyle(.plain)
         }
         .padding(14)
         .frame(maxWidth: .infinity)
