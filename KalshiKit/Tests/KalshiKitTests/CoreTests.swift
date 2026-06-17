@@ -26,9 +26,9 @@ final class CoreTests: XCTestCase {
 
     func testEnvironmentBaseURLsAreCorrect() {
         XCTAssertEqual(KalshiEnvironment.production.restBaseURL.absoluteString,
-                       "https://external-api.kalshi.com/trade-api/v2")
+                       "https://api.elections.kalshi.com/trade-api/v2")
         XCTAssertEqual(KalshiEnvironment.demo.restBaseURL.absoluteString,
-                       "https://external-api.demo.kalshi.co/trade-api/v2")
+                       "https://demo-api.kalshi.co/trade-api/v2")
         XCTAssertEqual(KalshiEnvironment.production.signingPathPrefix, "/trade-api/v2")
     }
 

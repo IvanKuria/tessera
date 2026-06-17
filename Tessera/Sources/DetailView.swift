@@ -1,0 +1,309 @@
+import SwiftUI
+import KalshiKit
+
+/// The event / market detail screen: header stats, price chart, buy controls,
+/// order book, trade tape, and (binary) rules — laid out Kalshi-style on a flat
+/// white canvas. Handles both binary and multi-outcome events.
+struct DetailView: View {
+    let event: EventVM
+    var onBuy: (_ marketTicker: String, _ side: OrderSide) -> Void = { _, _ in }
+
+    @State private var store = DetailStore()
+    @State private var selectedOutcomeID: String?
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                header
+                if event.isBinary {
+                    binaryBody
+                } else {
+                    multiBody
+                }
+            }
+            .padding(24)
+            .frame(maxWidth: 920, alignment: .leading)
+            .frame(maxWidth: .infinity)
+        }
+        .background(Theme.bg)
+        .navigationTitle("")
+        .task {
+            let focus = event.topOutcome?.id ?? ""
+            selectedOutcomeID = focus
+            await store.load(seriesTicker: event.seriesTicker, marketTicker: focus)
+        }
+        .onChange(of: store.timeframe) { _, _ in
+            Task { await store.reloadCandles() }
+        }
+    }
+
+    // MARK: - Header
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Eyebrow(text: event.category)
+            Text(event.title)
+                .font(Theme.condensed(26, .semibold))
+                .foregroundStyle(Theme.text)
+                .fixedSize(horizontal: false, vertical: true)
+            statsStrip
+                .padding(.top, 4)
+        }
+    }
+
+    private var statsStrip: some View {
+        HStack(alignment: .top, spacing: 28) {
+            StatBlock(label: "Last", value: lastPriceText, valueColor: Theme.text)
+            StatBlock(label: "24h Volume", value: volume24hText)
+            StatBlock(label: "Open Interest", value: openInterestText)
+            StatBlock(label: "Closes", value: closeCountdownText)
+        }
+    }
+
+    // MARK: - Binary layout
+
+    private var binaryBody: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            bigPriceHeadline
+            chart
+            buyRow(marketTicker: store.focusedMarketTicker,
+                   yesCents: focusedYesCents, noCents: focusedNoCents)
+            HStack(alignment: .top, spacing: 16) {
+                if store.orderbook != nil {
+                    OrderBookView(orderbook: store.orderbook ?? Orderbook())
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
+                RecentTradesView(trades: store.trades)
+                    .frame(maxWidth: .infinity, alignment: .top)
+            }
+            rulesSection
+        }
+    }
+
+    private var bigPriceHeadline: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(impliedPercentText)
+                .font(Theme.num(48, .semibold))
+                .foregroundStyle(Theme.text)
+            if let delta = priceDelta {
+                HStack(spacing: 3) {
+                    Image(systemName: delta >= 0 ? "arrow.up.right" : "arrow.down.right")
+                        .font(.system(size: 13, weight: .bold))
+                    Text("\(abs(delta))¢")
+                        .font(Theme.num(15, .semibold))
+                }
+                .foregroundStyle(delta >= 0 ? Theme.yes : Theme.no)
+            }
+        }
+    }
+
+    // MARK: - Multi-outcome layout
+
+    private var multiBody: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            chart
+            VStack(spacing: 0) {
+                ForEach(Array(event.outcomes.enumerated()), id: \.element.id) { index, outcome in
+                    outcomeRow(outcome)
+                    if index < event.outcomes.count - 1 {
+                        Rectangle().fill(Theme.divider).frame(height: 1)
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cardRadius)
+                    .fill(Theme.surface)
+                    .overlay(RoundedRectangle(cornerRadius: Theme.cardRadius).stroke(Theme.border, lineWidth: 1))
+            )
+            HStack(alignment: .top, spacing: 16) {
+                if store.orderbook != nil {
+                    OrderBookView(orderbook: store.orderbook ?? Orderbook())
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
+                RecentTradesView(trades: store.trades)
+                    .frame(maxWidth: .infinity, alignment: .top)
+            }
+        }
+    }
+
+    private func outcomeRow(_ outcome: OutcomeVM) -> some View {
+        let isSelected = outcome.id == selectedOutcomeID
+        return Button {
+            selectedOutcomeID = outcome.id
+            Task { await store.focus(marketTicker: outcome.id) }
+        } label: {
+            HStack(spacing: 14) {
+                Text(outcome.label)
+                    .font(Theme.ui(14, isSelected ? .semibold : .regular))
+                    .foregroundStyle(Theme.text)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                ProbabilityBar(percent: outcome.percent ?? 0)
+                    .frame(width: 90)
+                Text(outcome.percent.map { "\($0)%" } ?? "—")
+                    .font(Theme.num(14, .semibold))
+                    .foregroundStyle(Theme.text)
+                    .frame(width: 48, alignment: .trailing)
+                QuickBuyButton(side: .yes, cents: outcome.yesCents) {
+                    onBuy(outcome.id, .yes)
+                }
+                .frame(width: 96)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(isSelected ? Theme.subtle : Color.clear)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Shared pieces
+
+    private var chart: some View {
+        // Timeframe changes are observed by `.onChange(of: store.timeframe)`, which
+        // refetches candles — so the selector only needs to mutate the binding.
+        PriceChartView(
+            candles: store.candles,
+            isLoading: store.isLoading,
+            timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 })
+        )
+    }
+
+    private func buyRow(marketTicker: String, yesCents: Int?, noCents: Int?) -> some View {
+        HStack(spacing: 12) {
+            QuickBuyButton(side: .yes, cents: yesCents) { onBuy(marketTicker, .yes) }
+                .scaleEffect(1.0)
+            QuickBuyButton(side: .no, cents: noCents) { onBuy(marketTicker, .no) }
+        }
+        .font(Theme.ui(16, .semibold))
+    }
+
+    @State private var rulesExpanded = false
+
+    @ViewBuilder
+    private var rulesSection: some View {
+        if let rulesText = rulesText {
+            VStack(alignment: .leading, spacing: 0) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.18)) { rulesExpanded.toggle() }
+                } label: {
+                    HStack {
+                        Text("Rules")
+                            .font(Theme.ui(14, .semibold))
+                            .foregroundStyle(Theme.text)
+                        Spacer()
+                        Image(systemName: rulesExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+
+                if rulesExpanded {
+                    Text(rulesText)
+                        .font(Theme.ui(13, .regular))
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cardRadius)
+                    .fill(Theme.surface)
+                    .overlay(RoundedRectangle(cornerRadius: Theme.cardRadius).stroke(Theme.border, lineWidth: 1))
+            )
+        }
+    }
+
+    // MARK: - Derived display values
+
+    private var focusedYesCents: Int? {
+        if let dollars = store.market?.yesAskDollars?.value {
+            return cents(dollars)
+        }
+        return store.market?.yesAsk ?? focusedOutcome?.yesCents
+    }
+
+    private var focusedNoCents: Int? {
+        if let dollars = store.market?.noAskDollars?.value {
+            return cents(dollars)
+        }
+        return store.market?.noAsk ?? focusedOutcome?.noCents
+    }
+
+    private var focusedOutcome: OutcomeVM? {
+        event.outcomes.first { $0.id == store.focusedMarketTicker } ?? event.topOutcome
+    }
+
+    private var impliedPercentText: String {
+        if let pct = store.market?.impliedPercent { return "\(pct)%" }
+        if let pct = focusedOutcome?.percent { return "\(pct)%" }
+        return "—"
+    }
+
+    private var lastPriceText: String {
+        if let dollars = store.market?.lastPriceDollars?.value {
+            return "\(cents(dollars) ?? 0)¢"
+        }
+        if let last = store.market?.lastPrice { return "\(last)¢" }
+        if let yes = focusedOutcome?.yesCents { return "\(yes)¢" }
+        return "—"
+    }
+
+    /// Last minus previous, in cents (for the up/down headline delta).
+    private var priceDelta: Int? {
+        guard let last = store.market?.lastPriceDollars?.value,
+              let prev = store.market?.previousPriceDollars?.value else { return nil }
+        let lastC = cents(last) ?? 0
+        let prevC = cents(prev) ?? 0
+        return lastC - prevC
+    }
+
+    private var volume24hText: String {
+        if let v = store.market?.volume24hFp?.doubleValue {
+            return compactVolume(Int(v.rounded()))
+        }
+        if let v = store.market?.volumeFp?.doubleValue {
+            return compactVolume(Int(v.rounded()))
+        }
+        return compactVolume(event.totalVolume)
+    }
+
+    private var openInterestText: String {
+        if let oi = store.market?.openInterestFp?.doubleValue {
+            return compactVolume(Int(oi.rounded()))
+        }
+        if let oi = store.market?.openInterest { return compactVolume(oi) }
+        return "—"
+    }
+
+    private var closeCountdownText: String {
+        guard let close = event.closeTime else { return "—" }
+        let interval = close.timeIntervalSinceNow
+        if interval <= 0 { return "Closed" }
+        let days = Int(interval) / 86_400
+        let hours = (Int(interval) % 86_400) / 3_600
+        if days > 0 { return "\(days)d \(hours)h" }
+        let minutes = (Int(interval) % 3_600) / 60
+        if hours > 0 { return "\(hours)h \(minutes)m" }
+        return "\(minutes)m"
+    }
+
+    /// Best-effort rules text from the market (Kalshi's Market model has no
+    /// dedicated rules fields in this SDK; we surface subtitle/yes/no subtitles).
+    private var rulesText: String? {
+        guard let market = store.market else { return nil }
+        let parts = [market.subtitle, market.yesSubTitle, market.noSubTitle]
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+        let combined = parts.joined(separator: "\n\n")
+        return combined.isEmpty ? nil : combined
+    }
+
+    private func cents(_ dollars: Decimal) -> Int? {
+        Int(NSDecimalNumber(decimal: dollars * 100).doubleValue.rounded())
+    }
+}

@@ -14,6 +14,7 @@ struct OutcomeVM: Identifiable, Sendable, Hashable {
 /// An event grouping one or more outcomes — the unit shown as a card.
 struct EventVM: Identifiable, Sendable, Hashable {
     let id: String          // event ticker
+    let seriesTicker: String // needed for the candlesticks endpoint
     let title: String       // the question
     let category: String
     let totalVolume: Int
@@ -115,8 +116,10 @@ final class WatchlistStore {
             outcomes.sort { ($0.percent ?? 0) > ($1.percent ?? 0) }
 
             let close = (event.markets ?? []).compactMap(\.closeTime).first.flatMap { iso.date(from: $0) }
+            let series = event.seriesTicker ?? String(event.eventTicker.split(separator: "-").first ?? "")
             result.append(EventVM(
                 id: event.eventTicker,
+                seriesTicker: series,
                 title: event.title,
                 category: category,
                 totalVolume: totalVolume,

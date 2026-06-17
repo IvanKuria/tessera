@@ -1,0 +1,1589 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - region "Notifications alt+T"
+    - generic:
+      - navigation:
+        - generic [ref=e5]:
+          - generic [ref=e6]:
+            - generic [ref=e7]:
+              - link [ref=e8] [cursor=pointer]:
+                - /url: /
+                - img [ref=e9]
+              - generic [ref=e11]:
+                - link "MARKETS" [ref=e12] [cursor=pointer]:
+                  - /url: /browse
+                  - generic [ref=e13]: MARKETS
+                - link "PERPS" [ref=e14] [cursor=pointer]:
+                  - /url: /perps
+                  - generic [ref=e15]: PERPS
+                - link "LIVE 51" [ref=e16] [cursor=pointer]:
+                  - /url: /calendar
+                  - generic [ref=e17]: LIVE
+                  - generic [ref=e18]: "51"
+                - link "SOCIAL" [ref=e19] [cursor=pointer]:
+                  - /url: /ideas/feed
+                  - generic [ref=e20]: SOCIAL
+            - generic [ref=e21]:
+              - generic [ref=e24]:
+                - textbox "Trade on anything" [ref=e26]
+                - img [ref=e30]
+              - generic [ref=e33]:
+                - button [ref=e34] [cursor=pointer]:
+                  - img [ref=e35]
+                - generic [ref=e37]:
+                  - button "Log in" [ref=e39] [cursor=pointer]:
+                    - generic [ref=e40]: Log in
+                  - button "Sign up" [ref=e46] [cursor=pointer]:
+                    - generic [ref=e47]: Sign up
+          - generic [ref=e50]:
+            - link "Trending" [ref=e51] [cursor=pointer]:
+              - /url: /
+              - heading "Trending" [level=2] [ref=e52]
+            - link "Elections" [ref=e53] [cursor=pointer]:
+              - /url: /category/elections
+              - generic [ref=e54]: Elections
+            - link "Politics" [ref=e55] [cursor=pointer]:
+              - /url: /category/politics
+              - generic [ref=e56]: Politics
+            - link "Sports" [ref=e57] [cursor=pointer]:
+              - /url: /category/sports/all-sports
+              - generic [ref=e58]: Sports
+            - link "Culture" [ref=e59] [cursor=pointer]:
+              - /url: /category/culture
+              - generic [ref=e60]: Culture
+            - link "Crypto" [ref=e61] [cursor=pointer]:
+              - /url: /category/crypto
+              - generic [ref=e62]: Crypto
+            - link "Commodities" [ref=e63] [cursor=pointer]:
+              - /url: /category/commodities
+              - generic [ref=e64]: Commodities
+            - link "Climate" [ref=e65] [cursor=pointer]:
+              - /url: /category/climate
+              - generic [ref=e66]: Climate
+            - link "Economics" [ref=e67] [cursor=pointer]:
+              - /url: /category/economics
+              - generic [ref=e68]: Economics
+            - link "Mentions" [ref=e69] [cursor=pointer]:
+              - /url: /category/mentions
+              - generic [ref=e70]: Mentions
+            - link "Finance" [ref=e71] [cursor=pointer]:
+              - /url: /category/financials
+              - generic [ref=e72]: Finance
+            - link "Tech & Science" [ref=e73] [cursor=pointer]:
+              - /url: /category/science
+              - generic [ref=e74]: Tech & Science
+    - generic [ref=e76]:
+      - generic [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e84]:
+                - link "Soccer" [ref=e86] [cursor=pointer]:
+                  - /url: /category/sports/soccer/world-soccer-cup
+                  - generic [ref=e90]: Soccer
+                - link "England vs Croatia" [ref=e91] [cursor=pointer]:
+                  - /url: /markets/kxwcgame/world-cup-game/kxwcgame-26jun17engcro
+                  - heading "England vs Croatia" [level=2] [ref=e92]:
+                    - generic [ref=e93]: England vs Croatia
+                - generic [ref=e94]:
+                  - generic [ref=e96]:
+                    - generic [ref=e97]:
+                      - generic [ref=e98]:
+                        - generic [ref=e100]: LIVE
+                        - generic [ref=e101]: 1st - 17'
+                      - generic [ref=e102]:
+                        - generic [ref=e103]:
+                          - generic [ref=e104]:
+                            - generic "England" [ref=e106]:
+                              - img "England" [ref=e108]
+                            - generic [ref=e109]:
+                              - generic [ref=e110]: England
+                              - progressbar [ref=e111]
+                          - button "1" [ref=e117] [cursor=pointer]:
+                            - generic [ref=e118]: "1"
+                          - button "75%" [ref=e120] [cursor=pointer]:
+                            - generic [ref=e121]: 75%
+                        - generic [ref=e122]:
+                          - generic [ref=e123]:
+                            - generic "Croatia" [ref=e125]:
+                              - img "Croatia" [ref=e127]
+                            - generic [ref=e128]:
+                              - generic [ref=e129]: Croatia
+                              - progressbar [ref=e130]
+                          - button "0" [ref=e136] [cursor=pointer]:
+                            - generic [ref=e137]: "0"
+                          - button "9%" [ref=e139] [cursor=pointer]:
+                            - generic [ref=e140]: 9%
+                      - generic [ref=e141]:
+                        - generic [ref=e142]: $35,258,162 vol
+                        - link "Spread and Total1 market" [ref=e143] [cursor=pointer]:
+                          - /url: /markets/kxwcgame/world-cup-game/kxwcgame-26jun17engcro
+                          - text: Spread and Total
+                          - text: 1 market
+                    - separator [ref=e145]
+                    - generic [ref=e150] [cursor=pointer]:
+                      - generic "The content in this section is intended as informative. Player names are used for clarify and information purposes only, and do not indicate any endorsement or affiliation." [ref=e151]: News
+                      - text: · England opens Group L play against Croatia under new manager Thomas Tuchel, looking to put past near misses, including the 2018 semifinal and 2024 Euro final losses, behind them, according to FOX Sports. Kickoff is at 4:00 PM ET, airing on FOX from AT&T Stadium in Arlington, Texas.
+                  - link "England 75% Tie 18% Croatia 9%" [ref=e153] [cursor=pointer]:
+                    - /url: /markets/kxwcgame/world-cup-game/kxwcgame-26jun17engcro
+                    - generic [ref=e154]:
+                      - generic [ref=e155]:
+                        - generic [ref=e163]:
+                          - generic [ref=e164]:
+                            - generic [ref=e166]: England
+                            - generic [ref=e168]: 75%
+                          - generic [ref=e169]:
+                            - generic [ref=e171]: Tie
+                            - generic [ref=e173]: 18%
+                          - generic [ref=e174]:
+                            - generic [ref=e176]: Croatia
+                            - generic [ref=e178]: 9%
+                        - img [ref=e179]
+                      - img [ref=e186]:
+                        - generic [ref=e188]:
+                          - generic [ref=e191]:
+                            - img [ref=e193]:
+                              - generic: 12:16pm
+                            - img [ref=e195]:
+                              - generic: 12:31pm
+                            - img [ref=e197]:
+                              - generic: 12:46pm
+                            - img [ref=e199]:
+                              - generic: 1:01pm
+                            - img [ref=e201]:
+                              - generic: 1:16pm
+                          - generic [ref=e202]:
+                            - img [ref=e204]:
+                              - generic: 0%
+                            - img [ref=e206]:
+                              - generic: 25%
+                            - img [ref=e208]:
+                              - generic: 50%
+                            - img [ref=e210]:
+                              - generic: 75%
+                            - img [ref=e212]:
+                              - generic: 100%
+                          - img [ref=e220]:
+                            - generic [ref=e221]: »
+                          - img [ref=e224]:
+                            - generic [ref=e225]: »
+                          - img [ref=e228]:
+                            - generic [ref=e229]: »
+                        - generic [ref=e231]:
+                          - generic [ref=e233]: + $13
+                          - generic [ref=e235]: + $134
+                          - generic [ref=e237]: + $5
+                          - generic [ref=e239]: + $13
+                          - generic [ref=e241]: + $179
+                          - generic [ref=e243]: + $53
+              - generic [ref=e245]:
+                - link "Golf" [ref=e247] [cursor=pointer]:
+                  - /url: /category/sports/golf/pga
+                  - generic [ref=e251]: Golf
+                - link "U.S. Open End of Round 1 Leader" [ref=e252] [cursor=pointer]:
+                  - /url: /markets/kxpgar1lead/pga-round-1-leader/kxpgar1lead-uso26
+                  - heading "U.S. Open End of Round 1 Leader" [level=2] [ref=e253]:
+                    - generic [ref=e254]: U.S. Open End of Round 1 Leader
+                - generic [ref=e255]:
+                  - generic [ref=e257]:
+                    - generic [ref=e258]:
+                      - generic [ref=e259]:
+                        - generic [ref=e260]: Market
+                        - generic [ref=e261]: Pays out
+                        - generic [ref=e262]: Odds
+                      - generic [ref=e263]:
+                        - generic [ref=e264]:
+                          - generic [ref=e265]:
+                            - generic "Scottie Scheffler" [ref=e267]:
+                              - img "Scottie Scheffler" [ref=e269]
+                            - generic [ref=e270]:
+                              - generic [ref=e271]: Scottie Scheffler
+                              - progressbar [ref=e272]
+                          - generic [ref=e274]:
+                            - generic [ref=e275]: 16.8x
+                            - button "6%" [ref=e276] [cursor=pointer]:
+                              - generic [ref=e277]: 6%
+                        - generic [ref=e278]:
+                          - generic [ref=e279]:
+                            - generic "Rory McIlroy" [ref=e281]:
+                              - img "Rory McIlroy" [ref=e283]
+                            - generic [ref=e284]:
+                              - generic [ref=e285]: Rory McIlroy
+                              - progressbar [ref=e286]
+                          - generic [ref=e288]:
+                            - generic [ref=e289]: 24.7x
+                            - button "4%" [ref=e290] [cursor=pointer]:
+                              - generic [ref=e291]: 4%
+                      - generic [ref=e292]:
+                        - generic [ref=e293]: $99,301,445 vol
+                        - link "154 markets" [ref=e294] [cursor=pointer]:
+                          - /url: /markets/kxpgar1lead/pga-round-1-leader/kxpgar1lead-uso26
+                          - text: 154 markets
+                    - separator [ref=e296]
+                    - generic [ref=e301] [cursor=pointer]:
+                      - generic "The content in this section is intended as informative. Player names are used for clarify and information purposes only, and do not indicate any endorsement or affiliation." [ref=e302]: News
+                      - text: · The 126th U.S. Open tees off June 18 at Shinnecock Hills Golf Club in Southampton, N.Y., with Scottie Scheffler headlining the 156-player field as he pursues the final leg of the career Grand Slam, according to ESPN. First-round coverage begins at 6:30 AM ET on USA Network, with additional streaming available on Peacock.
+                  - link "Scottie Scheffler 5.6% Rory McIlroy 3.8% Jon Rahm 2.3%" [ref=e304] [cursor=pointer]:
+                    - /url: /markets/kxpgar1lead/pga-round-1-leader/kxpgar1lead-uso26
+                    - generic [ref=e305]:
+                      - generic [ref=e306]:
+                        - generic [ref=e314]:
+                          - generic [ref=e315]:
+                            - generic [ref=e317]: Scottie Scheffler
+                            - generic [ref=e319]: 5.6%
+                          - generic [ref=e320]:
+                            - generic [ref=e322]: Rory McIlroy
+                            - generic [ref=e324]: 3.8%
+                          - generic [ref=e325]:
+                            - generic [ref=e327]: Jon Rahm
+                            - generic [ref=e329]: 2.3%
+                        - img [ref=e330]
+                      - img [ref=e337]:
+                        - generic [ref=e339]:
+                          - generic [ref=e342]:
+                            - img [ref=e344]:
+                              - generic: May 18
+                            - img [ref=e346]:
+                              - generic: May 26
+                            - img [ref=e348]:
+                              - generic: Jun 2
+                            - img [ref=e350]:
+                              - generic: Jun 10
+                            - img [ref=e352]:
+                              - generic: Jun 17
+                          - generic [ref=e353]:
+                            - img [ref=e355]:
+                              - generic: 0%
+                            - img [ref=e357]:
+                              - generic: 2.5%
+                            - img [ref=e359]:
+                              - generic: 5%
+                            - img [ref=e361]:
+                              - generic: 7.5%
+                            - img [ref=e363]:
+                              - generic: 10%
+                          - img [ref=e375]:
+                            - generic [ref=e376]: »
+                          - img [ref=e379]:
+                            - generic [ref=e380]: »
+                          - img [ref=e383]:
+                            - generic [ref=e384]: »
+              - generic [ref=e387]:
+                - link "Golf" [ref=e389] [cursor=pointer]:
+                  - /url: /category/sports/golf/pga
+                  - generic [ref=e393]: Golf
+                - link "U.S. Open Winner" [ref=e394] [cursor=pointer]:
+                  - /url: /markets/kxpgatour/pga-tour/kxpgatour-uso26
+                  - heading "U.S. Open Winner" [level=2] [ref=e395]:
+                    - generic [ref=e396]: U.S. Open Winner
+                - generic [ref=e397]:
+                  - generic [ref=e399]:
+                    - generic [ref=e400]:
+                      - generic [ref=e401]:
+                        - generic [ref=e402]: Market
+                        - generic [ref=e403]: Pays out
+                        - generic [ref=e404]: Odds
+                      - generic [ref=e405]:
+                        - generic [ref=e406]:
+                          - generic [ref=e407]:
+                            - generic "Scottie Scheffler" [ref=e409]:
+                              - img "Scottie Scheffler" [ref=e411]
+                            - generic [ref=e412]:
+                              - generic [ref=e413]: Scottie Scheffler
+                              - progressbar [ref=e414]
+                          - generic [ref=e416]:
+                            - generic [ref=e417]: 6.74x
+                            - button "14%" [ref=e418] [cursor=pointer]:
+                              - generic [ref=e419]: 14%
+                        - generic [ref=e420]:
+                          - generic [ref=e421]:
+                            - generic "Rory McIlroy" [ref=e423]:
+                              - img "Rory McIlroy" [ref=e425]
+                            - generic [ref=e426]:
+                              - generic [ref=e427]: Rory McIlroy
+                              - progressbar [ref=e428]
+                          - generic [ref=e430]:
+                            - generic [ref=e431]: 14.0x
+                            - button "7%" [ref=e432] [cursor=pointer]:
+                              - generic [ref=e433]: 7%
+                      - generic [ref=e434]:
+                        - generic [ref=e435]: $99,301,445 vol
+                        - link "154 markets" [ref=e436] [cursor=pointer]:
+                          - /url: /markets/kxpgatour/pga-tour/kxpgatour-uso26
+                          - text: 154 markets
+                    - separator [ref=e438]
+                    - generic [ref=e443] [cursor=pointer]:
+                      - generic "The content in this section is intended as informative. Player names are used for clarify and information purposes only, and do not indicate any endorsement or affiliation." [ref=e444]: News
+                      - text: · The 126th U.S. Open Championship tees off June 18-21 at Shinnecock Hills Golf Club in Southampton, New York, with defending champion J.J. Spaun among a 156-player field, according to the USGA. Round 1 coverage begins June 18 on USA Network starting at 6:30 AM ET, with additional streaming on Peacock throughout the week.
+                  - link "Scottie Scheffler 14% Rory McIlroy 6.7% Tommy Fleetwood 4.2%" [ref=e446] [cursor=pointer]:
+                    - /url: /markets/kxpgatour/pga-tour/kxpgatour-uso26
+                    - generic [ref=e447]:
+                      - generic [ref=e448]:
+                        - generic [ref=e456]:
+                          - generic [ref=e457]:
+                            - generic [ref=e459]: Scottie Scheffler
+                            - generic [ref=e461]: 14%
+                          - generic [ref=e462]:
+                            - generic [ref=e464]: Rory McIlroy
+                            - generic [ref=e466]: 6.7%
+                          - generic [ref=e467]:
+                            - generic [ref=e469]: Tommy Fleetwood
+                            - generic [ref=e471]: 4.2%
+                        - img [ref=e472]
+                      - img [ref=e479]:
+                        - generic [ref=e481]:
+                          - generic [ref=e484]:
+                            - img [ref=e486]:
+                              - generic: May 18
+                            - img [ref=e488]:
+                              - generic: May 26
+                            - img [ref=e490]:
+                              - generic: Jun 2
+                            - img [ref=e492]:
+                              - generic: Jun 10
+                            - img [ref=e494]:
+                              - generic: Jun 17
+                          - generic [ref=e495]:
+                            - img [ref=e497]:
+                              - generic: 0%
+                            - img [ref=e499]:
+                              - generic: 5%
+                            - img [ref=e501]:
+                              - generic: 10%
+                            - img [ref=e503]:
+                              - generic: 15%
+                            - img [ref=e505]:
+                              - generic: 20%
+                          - img [ref=e513]:
+                            - generic [ref=e514]: »
+                          - img [ref=e517]:
+                            - generic [ref=e518]: »
+                          - img [ref=e521]:
+                            - generic [ref=e522]: »
+              - generic [ref=e525]:
+                - link "Politics" [ref=e527] [cursor=pointer]:
+                  - /url: /category/politics
+                  - generic [ref=e530]: Politics
+                - link "When will Jay Clayton be confirmed as Director of National Intelligence?" [ref=e531] [cursor=pointer]:
+                  - /url: /markets/kxclaytonconf/jay-clayton-confirmation/kxclaytonconf-26jun11
+                  - heading "When will Jay Clayton be confirmed as Director of National Intelligence?" [level=2] [ref=e532]:
+                    - generic [ref=e533]: When will Jay Clayton be confirmed as Director of National Intelligence?
+                - generic [ref=e534]:
+                  - generic [ref=e536]:
+                    - generic [ref=e537]:
+                      - generic [ref=e538]:
+                        - generic [ref=e539]: Market
+                        - generic [ref=e540]: Pays out
+                        - generic [ref=e541]: Odds
+                      - generic [ref=e542]:
+                        - generic [ref=e543]:
+                          - generic [ref=e545]:
+                            - generic [ref=e546]: Before Aug 8, 2026
+                            - progressbar [ref=e547]
+                          - generic [ref=e549]:
+                            - generic [ref=e550]: 1.22x
+                            - button "82%" [ref=e551] [cursor=pointer]:
+                              - generic [ref=e552]: 82%
+                        - generic [ref=e553]:
+                          - generic [ref=e555]:
+                            - generic [ref=e556]: Before Jul 18, 2026
+                            - progressbar [ref=e557]
+                          - generic [ref=e559]:
+                            - generic [ref=e560]: 1.38x
+                            - button "71%" [ref=e561] [cursor=pointer]:
+                              - generic [ref=e562]: 71%
+                      - generic [ref=e563]:
+                        - generic [ref=e564]: $153,351 vol
+                        - link "4 markets" [ref=e565] [cursor=pointer]:
+                          - /url: /markets/kxclaytonconf/jay-clayton-confirmation/kxclaytonconf-26jun11
+                          - text: 4 markets
+                    - separator [ref=e567]
+                    - generic [ref=e572] [cursor=pointer]:
+                      - generic "The content in this section is intended as informative. Player names are used for clarify and information purposes only, and do not indicate any endorsement or affiliation." [ref=e573]: News
+                      - text: · President Trump has delayed Jay Clayton's confirmation hearing to lead the U.S. intelligence community, using the postponement to pressure Congress over a stalled voter ID bill, according to the AP. Clayton, a former SEC chairman, had been set to appear before the Senate Intelligence Committee, while Trump's acting pick Bill Pulte remains positioned to step into the role on a temporary basis.
+                  - link "Before Aug 8, 2026 82% Before Jul 18, 2026 71% Before Jun 27, 2026 39%" [ref=e575] [cursor=pointer]:
+                    - /url: /markets/kxclaytonconf/jay-clayton-confirmation/kxclaytonconf-26jun11
+                    - generic [ref=e576]:
+                      - generic [ref=e577]:
+                        - generic [ref=e585]:
+                          - generic [ref=e586]:
+                            - generic [ref=e588]: Before Aug 8, 2026
+                            - generic [ref=e590]: 82%
+                          - generic [ref=e591]:
+                            - generic [ref=e593]: Before Jul 18, 2026
+                            - generic [ref=e595]: 71%
+                          - generic [ref=e596]:
+                            - generic [ref=e598]: Before Jun 27, 2026
+                            - generic [ref=e600]: 39%
+                        - img [ref=e601]
+                      - img [ref=e608]:
+                        - generic [ref=e610]:
+                          - generic [ref=e613]:
+                            - img [ref=e615]:
+                              - generic: Jun 11
+                            - img [ref=e617]:
+                              - generic: Jun 13
+                            - img [ref=e619]:
+                              - generic: Jun 14
+                            - img [ref=e621]:
+                              - generic: Jun 16
+                            - img [ref=e623]:
+                              - generic: Jun 17
+                          - generic [ref=e624]:
+                            - img [ref=e626]:
+                              - generic: 0%
+                            - img [ref=e628]:
+                              - generic: 25%
+                            - img [ref=e630]:
+                              - generic: 50%
+                            - img [ref=e632]:
+                              - generic: 75%
+                            - img [ref=e634]:
+                              - generic: 100%
+                          - img [ref=e646]:
+                            - generic [ref=e647]: »
+                          - img [ref=e650]:
+                            - generic [ref=e651]: »
+                          - img [ref=e654]:
+                            - generic [ref=e655]: »
+              - generic [ref=e658]:
+                - link "Elections" [ref=e660] [cursor=pointer]:
+                  - /url: /category/elections
+                  - generic [ref=e663]: Elections
+                - link "Oklahoma Republican Governor nominee?" [ref=e664] [cursor=pointer]:
+                  - /url: /markets/kxgovoknomr/gov-ok-nom-r/kxgovoknomr-26
+                  - heading "Oklahoma Republican Governor nominee?" [level=2] [ref=e665]:
+                    - generic [ref=e666]: Oklahoma Republican Governor nominee?
+                - generic [ref=e667]:
+                  - generic [ref=e669]:
+                    - generic [ref=e670]:
+                      - generic [ref=e671]:
+                        - generic [ref=e672]: Market
+                        - generic [ref=e673]: Pays out
+                        - generic [ref=e674]: Odds
+                      - generic [ref=e675]:
+                        - generic [ref=e676]:
+                          - generic [ref=e678]:
+                            - generic [ref=e679]: Mike Mazzei
+                            - progressbar [ref=e680]
+                          - generic [ref=e682]:
+                            - generic [ref=e683]: 1.48x
+                            - button "66%" [ref=e684] [cursor=pointer]:
+                              - generic [ref=e685]: 66%
+                        - generic [ref=e686]:
+                          - generic [ref=e688]:
+                            - generic [ref=e689]: Gentner Drummond
+                            - progressbar [ref=e690]
+                          - generic [ref=e692]:
+                            - generic [ref=e693]: 2.73x
+                            - button "32%" [ref=e694] [cursor=pointer]:
+                              - generic [ref=e695]: 32%
+                      - generic [ref=e697]: $951,697 vol
+                    - separator [ref=e699]
+                    - generic [ref=e704] [cursor=pointer]:
+                      - generic "The content in this section is intended as informative. Player names are used for clarify and information purposes only, and do not indicate any endorsement or affiliation." [ref=e705]: News
+                      - text: · Oklahoma is holding its Republican gubernatorial primary today, with term-limited Gov. Kevin Stitt unable to seek a third term, according to NBC News. The crowded field is led by Trump-endorsed former state legislator Mike Mazzei and state Attorney General Gentner Drummond, with former House Speaker Charles McCall and businessman Chip Keating also in contention.
+                  - link "Mike Mazzei 66% Gentner Drummond 32%" [ref=e707] [cursor=pointer]:
+                    - /url: /markets/kxgovoknomr/gov-ok-nom-r/kxgovoknomr-26
+                    - generic [ref=e708]:
+                      - generic [ref=e709]:
+                        - generic [ref=e717]:
+                          - generic [ref=e718]:
+                            - generic [ref=e720]: Mike Mazzei
+                            - generic [ref=e722]: 66%
+                          - generic [ref=e723]:
+                            - generic [ref=e725]: Gentner Drummond
+                            - generic [ref=e727]: 32%
+                        - img [ref=e728]
+                      - img [ref=e735]:
+                        - generic [ref=e737]:
+                          - generic [ref=e740]:
+                            - img [ref=e742]:
+                              - generic: May 18
+                            - img [ref=e744]:
+                              - generic: May 26
+                            - img [ref=e746]:
+                              - generic: Jun 2
+                            - img [ref=e748]:
+                              - generic: Jun 10
+                            - img [ref=e750]:
+                              - generic: Jun 17
+                          - generic [ref=e751]:
+                            - img [ref=e753]:
+                              - generic: 0%
+                            - img [ref=e755]:
+                              - generic: 25%
+                            - img [ref=e757]:
+                              - generic: 50%
+                            - img [ref=e759]:
+                              - generic: 75%
+                            - img [ref=e761]:
+                              - generic: 100%
+                          - img [ref=e767]:
+                            - generic [ref=e768]: »
+                          - img [ref=e771]:
+                            - generic [ref=e772]: »
+              - generic [ref=e775]:
+                - link "Politics" [ref=e777] [cursor=pointer]:
+                  - /url: /category/politics
+                  - generic [ref=e780]: Politics
+                - link "When will Anthropic restore Fable 5 access for US customers?" [ref=e781] [cursor=pointer]:
+                  - /url: /markets/kxfablerestore/fable-restored/kxfablerestore-27
+                  - heading "When will Anthropic restore Fable 5 access for US customers?" [level=2] [ref=e782]:
+                    - generic [ref=e783]: When will Anthropic restore Fable 5 access for US customers?
+                - generic [ref=e784]:
+                  - generic [ref=e786]:
+                    - generic [ref=e787]:
+                      - generic [ref=e788]:
+                        - generic [ref=e789]: Market
+                        - generic [ref=e790]: Pays out
+                        - generic [ref=e791]: Odds
+                      - generic [ref=e792]:
+                        - generic [ref=e793]:
+                          - generic [ref=e795]:
+                            - generic [ref=e796]: Before Jul 17, 2026
+                            - progressbar [ref=e797]
+                          - generic [ref=e799]:
+                            - generic [ref=e800]: 1.40x
+                            - button "70%" [ref=e801] [cursor=pointer]:
+                              - generic [ref=e802]: 70%
+                        - generic [ref=e803]:
+                          - generic [ref=e805]:
+                            - generic [ref=e806]: Before Jul 10, 2026
+                            - progressbar [ref=e807]
+                          - generic [ref=e809]:
+                            - generic [ref=e810]: 1.67x
+                            - button "57%" [ref=e811] [cursor=pointer]:
+                              - generic [ref=e812]: 57%
+                      - generic [ref=e813]:
+                        - generic [ref=e814]: $123,492 vol
+                        - link "4 markets" [ref=e815] [cursor=pointer]:
+                          - /url: /markets/kxfablerestore/fable-restored/kxfablerestore-27
+                          - text: 4 markets
+                    - separator [ref=e817]
+                    - generic [ref=e822] [cursor=pointer]:
+                      - generic "The content in this section is intended as informative. Player names are used for clarify and information purposes only, and do not indicate any endorsement or affiliation." [ref=e823]: News
+                      - text: · Anthropic disabled Claude Fable 5 for all users on June 12 after receiving a U.S. government export control directive citing national security concerns over a reported jailbreak, according to CNBC. Anthropic has said it disagrees with the directive and is working to restore access as soon as possible.
+                  - link "Before Jul 17, 2026 70% Before Jul 10, 2026 57% Before Jul 1, 2026 55%" [ref=e825] [cursor=pointer]:
+                    - /url: /markets/kxfablerestore/fable-restored/kxfablerestore-27
+                    - generic [ref=e826]:
+                      - generic [ref=e827]:
+                        - generic [ref=e835]:
+                          - generic [ref=e836]:
+                            - generic [ref=e838]: Before Jul 17, 2026
+                            - generic [ref=e840]: 70%
+                          - generic [ref=e841]:
+                            - generic [ref=e843]: Before Jul 10, 2026
+                            - generic [ref=e845]: 57%
+                          - generic [ref=e846]:
+                            - generic [ref=e848]: Before Jul 1, 2026
+                            - generic [ref=e850]: 55%
+                        - img [ref=e851]
+                      - img [ref=e858]:
+                        - generic [ref=e860]:
+                          - generic [ref=e863]:
+                            - img [ref=e865]:
+                              - generic: Jun 13
+                            - img [ref=e867]:
+                              - generic: Jun 14
+                            - img [ref=e869]:
+                              - generic: Jun 15
+                            - img [ref=e871]:
+                              - generic: Jun 16
+                            - img [ref=e873]:
+                              - generic: Jun 17
+                          - generic [ref=e874]:
+                            - img [ref=e876]:
+                              - generic: 42%
+                            - img [ref=e878]:
+                              - generic: 56%
+                            - img [ref=e880]:
+                              - generic: 70%
+                            - img [ref=e882]:
+                              - generic: 84%
+                            - img [ref=e884]:
+                              - generic: 98%
+                          - img [ref=e896]:
+                            - generic [ref=e897]: »
+                          - img [ref=e900]:
+                            - generic [ref=e901]: »
+                          - img [ref=e904]:
+                            - generic [ref=e905]: »
+              - generic [ref=e908]:
+                - link "Culture" [ref=e910] [cursor=pointer]:
+                  - /url: /category/culture
+                  - generic [ref=e913]: Culture
+                - 'link "Love Island USA S8: Week 3 elimination" [ref=e914] [cursor=pointer]':
+                  - /url: /markets/kxliusaeliminationw/who-will-be-eliminated-this-week/kxliusaeliminationw-26jun19
+                  - 'heading "Love Island USA S8: Week 3 elimination" [level=2] [ref=e915]':
+                    - generic [ref=e916]: "Love Island USA S8: Week 3 elimination"
+                - generic [ref=e917]:
+                  - generic [ref=e919]:
+                    - generic [ref=e920]:
+                      - generic [ref=e921]:
+                        - generic [ref=e922]: Market
+                        - generic [ref=e923]: Pays out
+                        - generic [ref=e924]: Odds
+                      - generic [ref=e925]:
+                        - generic [ref=e926]:
+                          - generic [ref=e927]:
+                            - generic "Gabriel" [ref=e929]:
+                              - img "Gabriel" [ref=e931]
+                            - generic [ref=e932]:
+                              - generic [ref=e933]: Gabriel
+                              - progressbar [ref=e934]
+                          - generic [ref=e936]:
+                            - generic [ref=e937]: 1.83x
+                            - button "52%" [ref=e938] [cursor=pointer]:
+                              - generic [ref=e939]: 52%
+                        - generic [ref=e940]:
+                          - generic [ref=e941]:
+                            - generic "Jen" [ref=e943]:
+                              - img "Jen" [ref=e945]
+                            - generic [ref=e946]:
+                              - generic [ref=e947]: Jen
+                              - progressbar [ref=e948]
+                          - generic [ref=e950]:
+                            - generic [ref=e951]: 2.01x
+                            - button "48%" [ref=e952] [cursor=pointer]:
+                              - generic [ref=e953]: 48%
+                      - generic [ref=e954]:
+                        - generic [ref=e955]: $429,255 vol
+                        - link "12 markets" [ref=e956] [cursor=pointer]:
+                          - /url: /markets/kxliusaeliminationw/who-will-be-eliminated-this-week/kxliusaeliminationw-26jun19
+                          - text: 12 markets
+                    - separator [ref=e958]
+                    - generic [ref=e963] [cursor=pointer]:
+                      - generic "The content in this section is intended as informative. Player names are used for clarify and information purposes only, and do not indicate any endorsement or affiliation." [ref=e964]: News
+                      - text: · Love Island USA Season 8 continues in Fiji as another Islander faces elimination, with host Ariana Madix overseeing the drama, according to Peacock. The episode streams at 9:00 PM ET on Peacock.
+                  - link "Gabriel 52% Jen 48% Sol 39%" [ref=e966] [cursor=pointer]:
+                    - /url: /markets/kxliusaeliminationw/who-will-be-eliminated-this-week/kxliusaeliminationw-26jun19
+                    - generic [ref=e967]:
+                      - generic [ref=e968]:
+                        - generic [ref=e976]:
+                          - generic [ref=e977]:
+                            - generic [ref=e979]: Gabriel
+                            - generic [ref=e981]: 52%
+                          - generic [ref=e982]:
+                            - generic [ref=e984]: Jen
+                            - generic [ref=e986]: 48%
+                          - generic [ref=e987]:
+                            - generic [ref=e989]: Sol
+                            - generic [ref=e991]: 39%
+                        - img [ref=e992]
+                      - img [ref=e999]:
+                        - generic [ref=e1001]:
+                          - generic [ref=e1004]:
+                            - img [ref=e1006]:
+                              - generic: Jun 14
+                            - img [ref=e1008]:
+                              - generic: Jun 15
+                            - img [ref=e1010]:
+                              - generic: Jun 15
+                            - img [ref=e1012]:
+                              - generic: Jun 16
+                            - img [ref=e1014]:
+                              - generic: Jun 17
+                          - generic [ref=e1015]:
+                            - img [ref=e1017]:
+                              - generic: 0%
+                            - img [ref=e1019]:
+                              - generic: 20%
+                            - img [ref=e1021]:
+                              - generic: 40%
+                            - img [ref=e1023]:
+                              - generic: 60%
+                            - img [ref=e1025]:
+                              - generic: 80%
+                          - img [ref=e1033]:
+                            - generic [ref=e1034]: »
+                          - img [ref=e1037]:
+                            - generic [ref=e1038]: »
+                          - img [ref=e1041]:
+                            - generic [ref=e1042]: »
+            - generic [ref=e1045]:
+              - button "Previous slide" [ref=e1046] [cursor=pointer]:
+                - img [ref=e1047]
+              - generic [ref=e1049]: 1 of 7
+              - button "Next slide" [ref=e1050] [cursor=pointer]:
+                - img [ref=e1051]
+          - group "Explore info cards" [ref=e1054]:
+            - generic [ref=e1058]:
+              - generic [ref=e1059]:
+                - link "Markets over Monopolies" [ref=e1060] [cursor=pointer]:
+                  - /url: https://kalshi.com/policy-center/markets-over-monopolies
+                - generic [ref=e1061]: How fair markets protect consumers
+              - img [ref=e1063]
+            - generic [ref=e1068]:
+              - generic [ref=e1069]:
+                - link "Responsible Trading" [ref=e1070] [cursor=pointer]:
+                  - /url: https://kalshi.com/policy-center/responsible-trading
+                - generic [ref=e1071]: Tools and tips for trading smart
+              - img [ref=e1073]
+            - generic [ref=e1078]:
+              - generic [ref=e1079]:
+                - link "Market Integrity" [ref=e1080] [cursor=pointer]:
+                  - /url: https://kalshi.com/policy-center/insider-trading
+                - generic [ref=e1081]: Learn how Kalshi prevents insider trading
+              - img [ref=e1083]
+          - generic [ref=e1085]:
+            - generic [ref=e1086]:
+              - link "Politics" [ref=e1087] [cursor=pointer]:
+                - /url: /category/politics
+                - generic [ref=e1088]:
+                  - heading "Politics" [level=2] [ref=e1090]
+                  - img [ref=e1092]
+              - generic [ref=e1095]:
+                - generic [ref=e1097]:
+                  - generic [ref=e1099] [cursor=pointer]:
+                    - generic [ref=e1100]:
+                      - link "Congress" [ref=e1102]:
+                        - /url: /category/politics/congress
+                        - generic [ref=e1105]: Congress
+                      - link "Will Congressional salaries increase?" [ref=e1106]:
+                        - /url: /markets/kxcongresspayincrease/will-congressional-pay-increase/kxcongresspayincrease-30
+                        - heading "Will Congressional salaries increase?" [level=2] [ref=e1110]
+                    - generic [ref=e1111]:
+                      - generic [ref=e1112]:
+                        - generic [ref=e1114]:
+                          - generic [ref=e1115]: Before Jan 1, 2030
+                          - progressbar [ref=e1116]
+                        - generic [ref=e1118]:
+                          - generic [ref=e1119]: 1.83x
+                          - button "47%" [ref=e1120]:
+                            - generic [ref=e1121]: 47%
+                      - generic [ref=e1122]:
+                        - generic [ref=e1124]:
+                          - generic [ref=e1125]: Before Jan 1, 2029
+                          - progressbar [ref=e1126]
+                        - generic [ref=e1128]:
+                          - generic [ref=e1129]: 2.24x
+                          - button "37%" [ref=e1130]:
+                            - generic [ref=e1131]: 37%
+                    - generic [ref=e1132]:
+                      - generic [ref=e1133]: NEW
+                      - link "4 markets" [ref=e1134]:
+                        - /url: /markets/kxcongresspayincrease/will-congressional-pay-increase/kxcongresspayincrease-30
+                        - text: 4 markets
+                  - generic [ref=e1136] [cursor=pointer]:
+                    - generic [ref=e1137]:
+                      - link "Congress" [ref=e1139]:
+                        - /url: /category/politics/congress
+                        - generic [ref=e1142]: Congress
+                      - link "Will members of Congress be banned from trading stocks?" [ref=e1143]:
+                        - /url: /markets/kxtrdban/congress-banned-from-trading-stocks/kxtrdban-25dec31
+                        - heading "Will members of Congress be banned from trading stocks?" [level=2] [ref=e1147]
+                    - generic [ref=e1148]:
+                      - generic [ref=e1149]:
+                        - generic [ref=e1151]:
+                          - generic [ref=e1152]: Before Jan 21, 2029
+                          - progressbar [ref=e1153]
+                        - generic [ref=e1155]:
+                          - generic [ref=e1156]: 2.63x
+                          - button "38%" [ref=e1157]:
+                            - generic [ref=e1158]: 38%
+                      - generic [ref=e1159]:
+                        - generic [ref=e1161]:
+                          - generic [ref=e1162]: Before 2027
+                          - progressbar [ref=e1163]
+                        - generic [ref=e1165]:
+                          - generic [ref=e1166]: 11.1x
+                          - button "9%" [ref=e1167]:
+                            - generic [ref=e1168]: 9%
+                    - generic [ref=e1169]:
+                      - generic [ref=e1170]: $251,590 vol
+                      - link "3 markets" [ref=e1171]:
+                        - /url: /markets/kxtrdban/congress-banned-from-trading-stocks/kxtrdban-25dec31
+                        - text: 3 markets
+                  - generic [ref=e1173] [cursor=pointer]:
+                    - generic [ref=e1174]:
+                      - link "Politics" [ref=e1176]:
+                        - /url: /category/politics
+                        - generic [ref=e1179]: Politics
+                      - link "Peak US National Debt Under Trump Administration Mar 31 @ 8:00AM" [ref=e1180]:
+                        - /url: /markets/kxdebtgrowth/us-debt-growth/kxdebtgrowth-28dec31
+                        - heading "Peak US National Debt Under Trump Administration" [level=2] [ref=e1184]
+                        - generic [ref=e1186]: Mar 31 @ 8:00AM
+                    - generic [ref=e1187]:
+                      - generic [ref=e1188]:
+                        - generic [ref=e1190]:
+                          - generic [ref=e1191]: $50 trillion
+                          - progressbar [ref=e1192]
+                        - generic [ref=e1194]:
+                          - generic [ref=e1195]: 2.94x
+                          - button "33%" [ref=e1196]:
+                            - generic [ref=e1197]: 33%
+                      - generic [ref=e1198]:
+                        - generic [ref=e1200]:
+                          - generic [ref=e1201]: $45 trillion
+                          - progressbar [ref=e1202]
+                        - generic [ref=e1204]:
+                          - generic [ref=e1205]: 1.20x
+                          - button "77%" [ref=e1206]:
+                            - generic [ref=e1207]: 77%
+                    - generic [ref=e1208]:
+                      - generic [ref=e1209]: $73,563 vol
+                      - link "3 markets" [ref=e1210]:
+                        - /url: /markets/kxdebtgrowth/us-debt-growth/kxdebtgrowth-28dec31
+                        - text: 3 markets
+                  - generic [ref=e1212] [cursor=pointer]:
+                    - generic [ref=e1213]:
+                      - link "International" [ref=e1215]:
+                        - /url: /category/politics/international
+                        - generic [ref=e1218]: International
+                      - link "What will the US tariff rate on China be on July 1?" [ref=e1219]:
+                        - /url: /markets/kxtariffrateprc/tariff-rate-china/kxtariffrateprc-26jul01
+                        - heading "What will the US tariff rate on China be on July 1?" [level=2] [ref=e1223]
+                    - generic [ref=e1224]:
+                      - generic [ref=e1225]:
+                        - generic [ref=e1227]:
+                          - generic [ref=e1228]: Between 10% and 19.99%
+                          - progressbar [ref=e1229]
+                        - generic [ref=e1231]:
+                          - generic [ref=e1232]: 1.06x
+                          - button "92%" [ref=e1233]:
+                            - generic [ref=e1234]: 92%
+                      - generic [ref=e1235]:
+                        - generic [ref=e1237]:
+                          - generic [ref=e1238]: Between 20% and 29.99%
+                          - progressbar [ref=e1239]
+                        - generic [ref=e1241]:
+                          - generic [ref=e1242]: 50.0x
+                          - button "2%" [ref=e1243]:
+                            - generic [ref=e1244]: 2%
+                    - generic [ref=e1245]:
+                      - generic [ref=e1246]: $121,378 vol
+                      - link "7 markets" [ref=e1247]:
+                        - /url: /markets/kxtariffrateprc/tariff-rate-china/kxtariffrateprc-26jul01
+                        - text: 7 markets
+                - status [ref=e1248]
+            - generic [ref=e1249]:
+              - link "Elections" [ref=e1250] [cursor=pointer]:
+                - /url: /tag/elections
+                - generic [ref=e1251]:
+                  - heading "Elections" [level=2] [ref=e1253]
+                  - img [ref=e1255]
+              - generic [ref=e1258]:
+                - generic [ref=e1260]:
+                  - generic [ref=e1262] [cursor=pointer]:
+                    - generic [ref=e1263]:
+                      - link "2028" [ref=e1265]:
+                        - /url: /category/elections/2028
+                        - generic [ref=e1268]: "2028"
+                      - link "2028 Democratic presidential nominee" [ref=e1269]:
+                        - /url: /markets/kxpresnomd/democratic-primary-winner/kxpresnomd-28
+                        - heading "2028 Democratic presidential nominee" [level=2] [ref=e1273]
+                    - generic [ref=e1274]:
+                      - generic [ref=e1275]:
+                        - generic [ref=e1276]:
+                          - generic "Gavin Newsom" [ref=e1278]:
+                            - img "Gavin Newsom" [ref=e1280]
+                          - generic [ref=e1281]:
+                            - generic [ref=e1282]: Gavin Newsom
+                            - progressbar [ref=e1283]
+                        - generic [ref=e1285]:
+                          - generic [ref=e1286]: 4.17x
+                          - button "24%" [ref=e1287]:
+                            - generic [ref=e1288]: 24%
+                      - generic [ref=e1289]:
+                        - generic [ref=e1290]:
+                          - generic "Jon Ossoff" [ref=e1292]:
+                            - img "Jon Ossoff" [ref=e1294]
+                          - generic [ref=e1295]:
+                            - generic [ref=e1296]: Jon Ossoff
+                            - progressbar [ref=e1297]
+                        - generic [ref=e1299]:
+                          - generic [ref=e1300]: 8.33x
+                          - button "12%" [ref=e1301]:
+                            - generic [ref=e1302]: 12%
+                    - generic [ref=e1303]:
+                      - generic [ref=e1304]: $128,288,872 vol
+                      - link "45 markets" [ref=e1305]:
+                        - /url: /markets/kxpresnomd/democratic-primary-winner/kxpresnomd-28
+                        - text: 45 markets
+                  - generic [ref=e1307] [cursor=pointer]:
+                    - generic [ref=e1308]:
+                      - link "2028" [ref=e1310]:
+                        - /url: /category/elections/2028
+                        - generic [ref=e1313]: "2028"
+                      - link "2028 Republican presidential nominee" [ref=e1314]:
+                        - /url: /markets/kxpresnomr/republican-primary-winner/kxpresnomr-28
+                        - heading "2028 Republican presidential nominee" [level=2] [ref=e1318]
+                    - generic [ref=e1319]:
+                      - generic [ref=e1320]:
+                        - generic [ref=e1321]:
+                          - generic "J.D. Vance" [ref=e1323]:
+                            - img "J.D. Vance" [ref=e1325]
+                          - generic [ref=e1326]:
+                            - generic [ref=e1327]: J.D. Vance
+                            - progressbar [ref=e1328]
+                        - generic [ref=e1330]:
+                          - generic [ref=e1331]: 2.78x
+                          - button "36%" [ref=e1332]:
+                            - generic [ref=e1333]: 36%
+                      - generic [ref=e1334]:
+                        - generic [ref=e1335]:
+                          - generic "Marco Rubio" [ref=e1337]:
+                            - img "Marco Rubio" [ref=e1339]
+                          - generic [ref=e1340]:
+                            - generic [ref=e1341]: Marco Rubio
+                            - progressbar [ref=e1342]
+                        - generic [ref=e1344]:
+                          - generic [ref=e1345]: 3.45x
+                          - button "28%" [ref=e1346]:
+                            - generic [ref=e1347]: 28%
+                    - generic [ref=e1348]:
+                      - generic [ref=e1349]: $48,015,138 vol
+                      - link "38 markets" [ref=e1350]:
+                        - /url: /markets/kxpresnomr/republican-primary-winner/kxpresnomr-28
+                        - text: 38 markets
+                  - generic [ref=e1352] [cursor=pointer]:
+                    - generic [ref=e1353]:
+                      - link "House" [ref=e1355]:
+                        - /url: /category/elections/us-elections
+                        - generic [ref=e1358]: House
+                      - link "Which party will win the U.S. House? Nov 3 @ 4:00AM" [ref=e1359]:
+                        - /url: /markets/controlh/house-winner/controlh-2026
+                        - heading "Which party will win the U.S. House?" [level=2] [ref=e1363]
+                        - generic [ref=e1365]: Nov 3 @ 4:00AM
+                    - generic [ref=e1366]:
+                      - generic [ref=e1367]:
+                        - generic [ref=e1368]:
+                          - generic "Democratic Party" [ref=e1370]:
+                            - img "Democratic Party" [ref=e1372]
+                          - generic [ref=e1373]:
+                            - generic [ref=e1374]: Democratic Party
+                            - progressbar [ref=e1375]
+                        - generic [ref=e1377]:
+                          - generic [ref=e1378]: 1.30x
+                          - button "76%" [ref=e1379]:
+                            - generic [ref=e1380]: 76%
+                      - generic [ref=e1381]:
+                        - generic [ref=e1382]:
+                          - generic "Republican Party" [ref=e1384]:
+                            - img "Republican Party" [ref=e1386]
+                          - generic [ref=e1387]:
+                            - generic [ref=e1388]: Republican Party
+                            - progressbar [ref=e1389]
+                        - generic [ref=e1391]:
+                          - generic [ref=e1392]: 4.17x
+                          - button "23%" [ref=e1393]:
+                            - generic [ref=e1394]: 23%
+                    - generic [ref=e1395]:
+                      - generic [ref=e1396]: $15,359,218 vol
+                      - link "2 markets" [ref=e1397]:
+                        - /url: /markets/controlh/house-winner/controlh-2026
+                        - text: 2 markets
+                  - generic [ref=e1399] [cursor=pointer]:
+                    - generic [ref=e1400]:
+                      - link "Senate" [ref=e1402]:
+                        - /url: /category/elections/senate
+                        - generic [ref=e1405]: Senate
+                      - link "Texas Senate winner? Nov 3 @ 5:00AM" [ref=e1406]:
+                        - /url: /markets/senatetx/texas-senate-race/senatetx-26
+                        - heading "Texas Senate winner?" [level=2] [ref=e1410]
+                        - generic [ref=e1412]: Nov 3 @ 5:00AM
+                    - generic [ref=e1413]:
+                      - generic [ref=e1414]:
+                        - generic [ref=e1415]:
+                          - generic "Ken Paxton" [ref=e1417]:
+                            - img "Ken Paxton" [ref=e1419]
+                          - generic [ref=e1420]:
+                            - generic [ref=e1421]: Ken Paxton
+                            - progressbar [ref=e1422]
+                        - generic [ref=e1424]:
+                          - generic [ref=e1425]: 1.69x
+                          - button "60%" [ref=e1426]:
+                            - generic [ref=e1427]: 60%
+                      - generic [ref=e1428]:
+                        - generic [ref=e1429]:
+                          - generic "James Talarico" [ref=e1431]:
+                            - img "James Talarico" [ref=e1433]
+                          - generic [ref=e1434]:
+                            - generic [ref=e1435]: James Talarico
+                            - progressbar [ref=e1436]
+                        - generic [ref=e1438]:
+                          - generic [ref=e1439]: 2.38x
+                          - button "42%" [ref=e1440]:
+                            - generic [ref=e1441]: 42%
+                    - generic [ref=e1442]:
+                      - generic [ref=e1443]: $4,879,748 vol
+                      - link "2 markets" [ref=e1444]:
+                        - /url: /markets/senatetx/texas-senate-race/senatetx-26
+                        - text: 2 markets
+                - status [ref=e1445]
+            - generic [ref=e1446]:
+              - link "Finance" [ref=e1447] [cursor=pointer]:
+                - /url: /category/financials
+                - generic [ref=e1448]:
+                  - heading "Finance" [level=2] [ref=e1450]
+                  - img [ref=e1452]
+              - generic [ref=e1455]:
+                - generic [ref=e1457]:
+                  - generic [ref=e1459] [cursor=pointer]:
+                    - generic [ref=e1460]:
+                      - link "AI" [ref=e1462]:
+                        - /url: /category/science/ai
+                        - generic [ref=e1465]: AI
+                      - link "Which companies will have a top-ranked AI model this year?" [ref=e1466]:
+                        - /url: /markets/kxtopai/topranked-ai/kxtopai-27
+                        - heading "Which companies will have a top-ranked AI model this year?" [level=2] [ref=e1470]
+                    - generic [ref=e1471]:
+                      - generic [ref=e1472]:
+                        - generic [ref=e1474]:
+                          - generic [ref=e1475]: OpenAI
+                          - progressbar [ref=e1476]
+                        - generic [ref=e1478]:
+                          - generic [ref=e1479]: 3.03x
+                          - button "31%" [ref=e1480]:
+                            - generic [ref=e1481]: 31%
+                      - generic [ref=e1482]:
+                        - generic [ref=e1484]:
+                          - generic [ref=e1485]: Meta
+                          - progressbar [ref=e1486]
+                        - generic [ref=e1488]:
+                          - generic [ref=e1489]: 5.00x
+                          - button "20%" [ref=e1490]:
+                            - generic [ref=e1491]: 20%
+                    - generic [ref=e1492]:
+                      - generic [ref=e1493]: $993,180 vol
+                      - link "14 markets" [ref=e1494]:
+                        - /url: /markets/kxtopai/topranked-ai/kxtopai-27
+                        - text: 14 markets
+                  - generic [ref=e1496] [cursor=pointer]:
+                    - generic [ref=e1497]:
+                      - link "Finance" [ref=e1499]:
+                        - /url: /category/financials
+                        - generic [ref=e1502]: Finance
+                      - link "Will OpenAI or Anthropic IPO first?" [ref=e1503]:
+                        - /url: /markets/kxoaianth/open-ai-vs-anthropic/kxoaianth-40
+                        - heading "Will OpenAI or Anthropic IPO first?" [level=2] [ref=e1507]
+                    - generic [ref=e1508]:
+                      - generic [ref=e1509]:
+                        - generic [ref=e1511]:
+                          - generic [ref=e1512]: OpenAI
+                          - progressbar [ref=e1513]
+                        - generic [ref=e1515]:
+                          - generic [ref=e1516]: 3.52x
+                          - button "26%" [ref=e1517]:
+                            - generic [ref=e1518]: 26%
+                      - generic [ref=e1519]:
+                        - generic [ref=e1521]:
+                          - generic [ref=e1522]: Anthropic
+                          - progressbar [ref=e1523]
+                        - generic [ref=e1525]:
+                          - generic [ref=e1526]: 1.28x
+                          - button "76%" [ref=e1527]:
+                            - generic [ref=e1528]: 76%
+                    - generic [ref=e1529]:
+                      - generic [ref=e1530]: $275,730 vol
+                      - link "2 markets" [ref=e1531]:
+                        - /url: /markets/kxoaianth/open-ai-vs-anthropic/kxoaianth-40
+                        - text: 2 markets
+                  - generic [ref=e1533] [cursor=pointer]:
+                    - generic [ref=e1534]:
+                      - link "Finance" [ref=e1536]:
+                        - /url: /category/financials
+                        - generic [ref=e1539]: Finance
+                      - link "Will Deel or Rippling IPO first?" [ref=e1540]:
+                        - /url: /markets/kxdeelrip/deel-v-rippling/kxdeelrip-40
+                        - heading "Will Deel or Rippling IPO first?" [level=2] [ref=e1544]
+                    - generic [ref=e1545]:
+                      - generic [ref=e1546]:
+                        - generic [ref=e1548]:
+                          - generic [ref=e1549]: Deel
+                          - progressbar [ref=e1550]
+                        - generic [ref=e1552]:
+                          - generic [ref=e1553]: 1.52x
+                          - button "63%" [ref=e1554]:
+                            - generic [ref=e1555]: 63%
+                      - generic [ref=e1556]:
+                        - generic [ref=e1558]:
+                          - generic [ref=e1559]: Rippling
+                          - progressbar [ref=e1560]
+                        - generic [ref=e1562]:
+                          - generic [ref=e1563]: 2.19x
+                          - button "37%" [ref=e1564]:
+                            - generic [ref=e1565]: 37%
+                    - generic [ref=e1566]:
+                      - generic [ref=e1567]: $9,130 vol
+                      - link "2 markets" [ref=e1568]:
+                        - /url: /markets/kxdeelrip/deel-v-rippling/kxdeelrip-40
+                        - text: 2 markets
+                  - generic [ref=e1570] [cursor=pointer]:
+                    - generic [ref=e1571]:
+                      - generic [ref=e1576]: General
+                      - link "Which Companies will officially announce an IPO this year?" [ref=e1577]:
+                        - /url: /markets/kxipo/ipos/kxipo-26
+                        - heading "Which Companies will officially announce an IPO this year?" [level=2] [ref=e1581]
+                    - generic [ref=e1582]:
+                      - generic [ref=e1583]:
+                        - generic [ref=e1584]:
+                          - generic "Discord" [ref=e1586]:
+                            - img "Discord" [ref=e1588]
+                          - generic [ref=e1589]:
+                            - generic [ref=e1590]: Discord
+                            - progressbar [ref=e1591]
+                        - generic [ref=e1593]:
+                          - generic [ref=e1594]: 1.75x
+                          - button "55%" [ref=e1595]:
+                            - generic [ref=e1596]: 55%
+                      - generic [ref=e1597]:
+                        - generic [ref=e1598]:
+                          - generic "Kraken" [ref=e1600]:
+                            - img "Kraken" [ref=e1602]
+                          - generic [ref=e1603]:
+                            - generic [ref=e1604]: Kraken
+                            - progressbar [ref=e1605]
+                        - generic [ref=e1607]:
+                          - generic [ref=e1608]: 2.63x
+                          - button "37%" [ref=e1609]:
+                            - generic [ref=e1610]: 37%
+                    - generic [ref=e1611]:
+                      - generic [ref=e1612]: $1,939,409 vol
+                      - link "28 markets" [ref=e1613]:
+                        - /url: /markets/kxipo/ipos/kxipo-26
+                        - text: 28 markets
+                - status [ref=e1614]
+            - generic [ref=e1615]:
+              - link "Economics" [ref=e1616] [cursor=pointer]:
+                - /url: /category/economics
+                - generic [ref=e1617]:
+                  - heading "Economics" [level=2] [ref=e1619]
+                  - img [ref=e1621]
+              - generic [ref=e1624]:
+                - generic [ref=e1626]:
+                  - generic [ref=e1628] [cursor=pointer]:
+                    - generic [ref=e1629]:
+                      - link "Inflation" [ref=e1631]:
+                        - /url: /category/economics/inflation
+                        - generic [ref=e1634]: Inflation
+                      - link "State of the economy at the end of 2026 Jan 13 @ 3:00AM" [ref=e1635]:
+                        - /url: /markets/kxeconpath/state-of-the-economy/kxeconpath-26
+                        - heading "State of the economy at the end of 2026" [level=2] [ref=e1639]
+                        - generic [ref=e1641]: Jan 13 @ 3:00AM
+                    - generic [ref=e1642]:
+                      - generic [ref=e1643]:
+                        - generic [ref=e1645]:
+                          - generic [ref=e1646]: Overheating
+                          - progressbar [ref=e1647]
+                        - generic [ref=e1649]:
+                          - generic [ref=e1650]: 2.17x
+                          - button "46%" [ref=e1651]:
+                            - generic [ref=e1652]: 46%
+                      - generic [ref=e1653]:
+                        - generic [ref=e1655]:
+                          - generic [ref=e1656]: Soft landing
+                          - progressbar [ref=e1657]
+                        - generic [ref=e1659]:
+                          - generic [ref=e1660]: 2.33x
+                          - button "43%" [ref=e1661]:
+                            - generic [ref=e1662]: 43%
+                    - generic [ref=e1663]:
+                      - generic [ref=e1664]: $33,928 vol
+                      - link "4 markets" [ref=e1665]:
+                        - /url: /markets/kxeconpath/state-of-the-economy/kxeconpath-26
+                        - text: 4 markets
+                  - generic [ref=e1667] [cursor=pointer]:
+                    - generic [ref=e1668]:
+                      - link "Fed" [ref=e1670]:
+                        - /url: /category/economics/fed
+                        - generic [ref=e1673]: Fed
+                      - link "Number of rate cuts in 2026? Dec 31 @ 7:00PM" [ref=e1674]:
+                        - /url: /markets/kxratecutcount/number-of-rate-cuts/kxratecutcount-26dec31
+                        - heading "Number of rate cuts in 2026?" [level=2] [ref=e1678]
+                        - generic [ref=e1680]: Dec 31 @ 7:00PM
+                    - generic [ref=e1681]:
+                      - generic [ref=e1682]:
+                        - generic [ref=e1684]:
+                          - generic [ref=e1685]: Exactly 0 cuts
+                          - progressbar [ref=e1686]
+                        - generic [ref=e1688]:
+                          - generic [ref=e1689]: 1.35x
+                          - button "74%" [ref=e1690]:
+                            - generic [ref=e1691]: 74%
+                      - generic [ref=e1692]:
+                        - generic [ref=e1694]:
+                          - generic [ref=e1695]: Exactly 1 cut
+                          - progressbar [ref=e1696]
+                        - generic [ref=e1698]:
+                          - generic [ref=e1699]: 6.25x
+                          - button "20%" [ref=e1700]:
+                            - generic [ref=e1701]: 20%
+                    - generic [ref=e1702]:
+                      - generic [ref=e1703]: $4,580,921 vol
+                      - link "21 markets" [ref=e1704]:
+                        - /url: /markets/kxratecutcount/number-of-rate-cuts/kxratecutcount-26dec31
+                        - text: 21 markets
+                  - generic [ref=e1706] [cursor=pointer]:
+                    - generic [ref=e1707]:
+                      - link "Economics" [ref=e1709]:
+                        - /url: /category/economics
+                        - generic [ref=e1712]: Economics
+                      - link "More tech layoffs in 2026 than in 2025? Mar 1 @ 7:00AM" [ref=e1713]:
+                        - /url: /markets/kxlayoffsyinfo/tech-layoffs/kxlayoffsyinfo-26
+                        - heading "More tech layoffs in 2026 than in 2025?" [level=2] [ref=e1717]
+                        - generic [ref=e1719]: Mar 1 @ 7:00AM
+                    - generic [ref=e1720]:
+                      - generic [ref=e1721]:
+                        - generic [ref=e1723]:
+                          - generic [ref=e1724]: "Yes"
+                          - progressbar [ref=e1725]
+                        - generic [ref=e1727]:
+                          - generic [ref=e1728]: 1.08x
+                          - button "91%" [ref=e1729]:
+                            - generic [ref=e1730]: 91%
+                      - generic [ref=e1731]:
+                        - generic [ref=e1733]:
+                          - generic [ref=e1734]: "No"
+                          - progressbar [ref=e1735]
+                        - generic [ref=e1737]:
+                          - generic [ref=e1738]: 10.4x
+                          - button "9%" [ref=e1739]:
+                            - generic [ref=e1740]: 9%
+                    - generic [ref=e1741]:
+                      - generic [ref=e1742]: $31,409,251 vol
+                      - link "1 market" [ref=e1743]:
+                        - /url: /markets/kxlayoffsyinfo/tech-layoffs/kxlayoffsyinfo-26
+                        - text: 1 market
+                  - generic [ref=e1745] [cursor=pointer]:
+                    - generic [ref=e1746]:
+                      - link "Jobs & Economy" [ref=e1748]:
+                        - /url: /category/economics/jobs-economy
+                        - generic [ref=e1751]: Jobs & Economy
+                      - link "How high will unemployment get before 2030? Jan 4 @ 5:00AM" [ref=e1752]:
+                        - /url: /markets/kxu3max/unemployment-spike/kxu3max-30
+                        - heading "How high will unemployment get before 2030?" [level=2] [ref=e1756]
+                        - generic [ref=e1758]: Jan 4 @ 5:00AM
+                    - generic [ref=e1759]:
+                      - generic [ref=e1760]:
+                        - generic [ref=e1762]:
+                          - generic [ref=e1763]: Above 9%
+                          - progressbar [ref=e1764]
+                        - generic [ref=e1766]:
+                          - generic [ref=e1767]: 1.92x
+                          - button "52%" [ref=e1768]:
+                            - generic [ref=e1769]: 52%
+                      - generic [ref=e1770]:
+                        - generic [ref=e1772]:
+                          - generic [ref=e1773]: Above 8%
+                          - progressbar [ref=e1774]
+                        - generic [ref=e1776]:
+                          - generic [ref=e1777]: 1.59x
+                          - button "63%" [ref=e1778]:
+                            - generic [ref=e1779]: 63%
+                    - generic [ref=e1780]:
+                      - generic [ref=e1781]: $14,920 vol
+                      - link "10 markets" [ref=e1782]:
+                        - /url: /markets/kxu3max/unemployment-spike/kxu3max-30
+                        - text: 10 markets
+                - status [ref=e1783]
+        - generic [ref=e1785]:
+          - generic [ref=e1786]:
+            - button "Dismiss perps upsell" [ref=e1789] [cursor=pointer]:
+              - img [ref=e1790]
+            - generic [ref=e1792]:
+              - heading "Intro to Perpetuals" [level=2] [ref=e1793]
+              - generic [ref=e1794]: Trade with leverage, go long or short, and keep your position open without an expiration date. 0% fees for a limited time
+            - button "Get started" [ref=e1796] [cursor=pointer]
+          - generic [ref=e1797]:
+            - generic [ref=e1798] [cursor=pointer]:
+              - link "World Soccer Cup":
+                - /url: /category/sports/soccer/world-soccer-cup/soccer-cup/games
+              - generic:
+                - heading "World Soccer Cup" [level=2]
+                - img
+            - generic [ref=e1799] [cursor=pointer]:
+              - link "2026 Elections":
+                - /url: /category/elections/primaries
+              - generic:
+                - heading "2026 Elections" [level=2]
+                - img
+          - generic [ref=e1801]:
+            - link "Trending" [ref=e1803] [cursor=pointer]:
+              - /url: /browse?order_by=trending&status=open&excludeSports=true
+              - generic [ref=e1804]:
+                - heading "Trending" [level=2] [ref=e1806]
+                - img [ref=e1808]
+            - generic [ref=e1810]:
+              - link "1 BTC price on Friday at 5pm EDT? $64,500 or above 46% ▼ 25" [ref=e1813] [cursor=pointer]:
+                - /url: /markets/kxbtcd/bitcoin-price-abovebelow/kxbtcd-26jun1917
+                - generic [ref=e1814]: "1"
+                - generic [ref=e1816]:
+                  - generic [ref=e1817]: BTC price on Friday at 5pm EDT?
+                  - generic [ref=e1818]: $64,500 or above
+                - generic [ref=e1819]:
+                  - generic [ref=e1821]: 46%
+                  - generic [ref=e1822]:
+                    - generic [ref=e1823]: ▼
+                    - generic [ref=e1824]: "25"
+              - link "2 Fed decision in July? Fed maintains rate 78% ▼ 14" [ref=e1827] [cursor=pointer]:
+                - /url: /markets/kxfeddecision/fed-meeting/kxfeddecision-26jul
+                - generic [ref=e1828]: "2"
+                - generic [ref=e1830]:
+                  - generic [ref=e1831]: Fed decision in July?
+                  - generic [ref=e1832]: Fed maintains rate
+                - generic [ref=e1833]:
+                  - generic [ref=e1835]: 78%
+                  - generic [ref=e1836]:
+                    - generic [ref=e1837]: ▼
+                    - generic [ref=e1838]: "14"
+              - link "3 2028 U.S. Presidential Election winner? Marco Rubio 18% ––" [ref=e1841] [cursor=pointer]:
+                - /url: /markets/kxpresperson/pres-person/kxpresperson-28
+                - generic [ref=e1842]: "3"
+                - generic [ref=e1844]:
+                  - generic [ref=e1845]: 2028 U.S. Presidential Election winner?
+                  - generic [ref=e1846]: Marco Rubio
+                - generic [ref=e1847]:
+                  - generic [ref=e1849]: 18%
+                  - generic [ref=e1850]: ––
+          - generic [ref=e1852]:
+            - link "2026 Primaries" [ref=e1854] [cursor=pointer]:
+              - /url: /category/elections/primaries
+              - generic [ref=e1855]:
+                - heading "2026 Primaries" [level=2] [ref=e1857]
+                - img [ref=e1859]
+            - generic [ref=e1861]:
+              - link "1 Oklahoma Republican Governor nominee? Mike Mazzei 66% ▼ 9" [ref=e1864] [cursor=pointer]:
+                - /url: /markets/kxgovoknomr/gov-ok-nom-r/kxgovoknomr-26
+                - generic [ref=e1865]: "1"
+                - generic [ref=e1867]:
+                  - generic [ref=e1868]: Oklahoma Republican Governor nominee?
+                  - generic [ref=e1869]: Mike Mazzei
+                - generic [ref=e1870]:
+                  - generic [ref=e1872]: 66%
+                  - generic [ref=e1873]:
+                    - generic [ref=e1874]: ▼
+                    - generic [ref=e1875]: "9"
+              - link "2 Florida Republican Governor nominee? Byron Donalds 93% ––" [ref=e1878] [cursor=pointer]:
+                - /url: /markets/kxgovflnomr/florida-governor-republican-nominee/kxgovflnomr-26
+                - generic [ref=e1879]: "2"
+                - generic [ref=e1881]:
+                  - generic [ref=e1882]: Florida Republican Governor nominee?
+                  - generic [ref=e1883]: Byron Donalds
+                - generic [ref=e1884]:
+                  - generic [ref=e1886]: 93%
+                  - generic [ref=e1887]: ––
+              - link "3 South Carolina Republican Governor nominee? Alan Wilson 85% ▲ 1" [ref=e1890] [cursor=pointer]:
+                - /url: /markets/kxgovscnomr/south-carolina-republican-nominee/kxgovscnomr-26
+                - generic [ref=e1891]: "3"
+                - generic [ref=e1893]:
+                  - generic [ref=e1894]: South Carolina Republican Governor nominee?
+                  - generic [ref=e1895]: Alan Wilson
+                - generic [ref=e1896]:
+                  - generic [ref=e1898]: 85%
+                  - generic [ref=e1899]:
+                    - generic [ref=e1900]: ▲
+                    - generic [ref=e1901]: "1"
+          - generic [ref=e1903]:
+            - link "Top movers" [ref=e1905] [cursor=pointer]:
+              - /url: /browse?order_by=price-delta&status=open
+              - generic [ref=e1906]:
+                - heading "Top movers" [level=2] [ref=e1908]
+                - img [ref=e1910]
+            - generic [ref=e1912]:
+              - 'link "1 U.S. Open: Golfers to Finish Under Par 5+ golfers 13% ▼ 85" [ref=e1915] [cursor=pointer]':
+                - /url: /markets/kxpgaunderpar/golfers-to-finish-under-par/kxpgaunderpar-uso26
+                - generic [ref=e1916]: "1"
+                - generic [ref=e1918]:
+                  - generic [ref=e1919]: "U.S. Open: Golfers to Finish Under Par"
+                  - generic [ref=e1920]: 5+ golfers
+                - generic [ref=e1921]:
+                  - generic [ref=e1923]: 13%
+                  - generic [ref=e1924]:
+                    - generic [ref=e1925]: ▼
+                    - generic [ref=e1926]: "85"
+              - link "2 Pro Football Coaches Out Before September Dan Quinn 3% ▼ 95" [ref=e1929] [cursor=pointer]:
+                - /url: /markets/kxcoachoutnfl/nfl-coach-out/kxcoachoutnfl
+                - generic [ref=e1930]: "2"
+                - generic [ref=e1932]:
+                  - generic [ref=e1933]: Pro Football Coaches Out Before September
+                  - generic [ref=e1934]: Dan Quinn
+                - generic [ref=e1935]:
+                  - generic [ref=e1937]: 3%
+                  - generic [ref=e1938]:
+                    - generic [ref=e1939]: ▼
+                    - generic [ref=e1940]: "95"
+              - 'link "3 Love Island UK S13: 2nd place couple Lola and Sean 97% ▲ 94" [ref=e1943] [cursor=pointer]':
+                - /url: /markets/kxloveislandukrank/love-island-uk-rank/kxloveislandukrank-26aug31r2
+                - generic [ref=e1944]: "3"
+                - generic [ref=e1946]:
+                  - generic [ref=e1947]: "Love Island UK S13: 2nd place couple"
+                  - generic [ref=e1948]: Lola and Sean
+                - generic [ref=e1949]:
+                  - generic [ref=e1951]: 97%
+                  - generic [ref=e1952]:
+                    - generic [ref=e1953]: ▲
+                    - generic [ref=e1954]: "94"
+          - generic [ref=e1956]:
+            - link "New" [ref=e1958] [cursor=pointer]:
+              - /url: /browse?order_by=newest&status=open&excludeSports=true
+              - generic [ref=e1959]:
+                - heading "New" [level=2] [ref=e1961]
+                - img [ref=e1963]
+            - generic [ref=e1965]:
+              - link "1 Who will dissent at the July Fed meeting? Michelle Bowman 49% ▲ 49" [ref=e1968] [cursor=pointer]:
+                - /url: /markets/kxfeddissent/fed-dissent/kxfeddissent-26jul
+                - generic [ref=e1969]: "1"
+                - generic [ref=e1971]:
+                  - generic [ref=e1972]: Who will dissent at the July Fed meeting?
+                  - generic [ref=e1973]: Michelle Bowman
+                - generic [ref=e1974]:
+                  - generic [ref=e1976]: 49%
+                  - generic [ref=e1977]:
+                    - generic [ref=e1978]: ▲
+                    - generic [ref=e1979]: "49"
+              - link "2 What will Nancy Pelosi say during The Briefing with Jen Psaki? Congress / Congressional 59% ▲ 59" [ref=e1982] [cursor=pointer]:
+                - /url: /markets/kxpsakimention/jen-psaki-mention/kxpsakimention-26jun17
+                - generic [ref=e1983]: "2"
+                - generic [ref=e1985]:
+                  - generic [ref=e1986]: What will Nancy Pelosi say during The Briefing with Jen Psaki?
+                  - generic [ref=e1987]: Congress / Congressional
+                - generic [ref=e1988]:
+                  - generic [ref=e1990]: 59%
+                  - generic [ref=e1991]:
+                    - generic [ref=e1992]: ▲
+                    - generic [ref=e1993]: "59"
+              - link "3 Iran crude oil production this month At least 3.4M bpd 40% ▲ 40" [ref=e1996] [cursor=pointer]:
+                - /url: /markets/kxirancrude/iran-crude-oil-production-in-month/kxirancrude-26jul13
+                - generic [ref=e1997]: "3"
+                - generic [ref=e1999]:
+                  - generic [ref=e2000]: Iran crude oil production this month
+                  - generic [ref=e2001]: At least 3.4M bpd
+                - generic [ref=e2002]:
+                  - generic [ref=e2004]: 40%
+                  - generic [ref=e2005]:
+                    - generic [ref=e2006]: ▲
+                    - generic [ref=e2007]: "40"
+          - generic [ref=e2009]:
+            - link "Highest volume" [ref=e2011] [cursor=pointer]:
+              - /url: /browse?order_by=event-volume&status=open
+              - generic [ref=e2012]:
+                - heading "Highest volume" [level=2] [ref=e2014]
+                - img [ref=e2016]
+            - generic [ref=e2018]:
+              - link "1 World Soccer Cup Winner France $342,524,686 vol 48 markets 18% ▲ 2" [ref=e2021] [cursor=pointer]:
+                - /url: /markets/kxmenworldcup/mens-world-cup-winner/kxmenworldcup-26
+                - generic [ref=e2022]: "1"
+                - generic [ref=e2023]:
+                  - generic [ref=e2024]:
+                    - generic [ref=e2025]: World Soccer Cup Winner
+                    - generic [ref=e2026]: France
+                  - generic [ref=e2027]:
+                    - generic [ref=e2028]: $342,524,686 vol
+                    - generic [ref=e2029]: 48 markets
+                - generic [ref=e2030]:
+                  - generic [ref=e2032]: 18%
+                  - generic [ref=e2033]:
+                    - generic [ref=e2034]: ▲
+                    - generic [ref=e2035]: "2"
+              - link "2 2028 Democratic presidential nominee Gavin Newsom $128,291,586 vol 45 markets 24% ––" [ref=e2038] [cursor=pointer]:
+                - /url: /markets/kxpresnomd/democratic-primary-winner/kxpresnomd-28
+                - generic [ref=e2039]: "2"
+                - generic [ref=e2040]:
+                  - generic [ref=e2041]:
+                    - generic [ref=e2042]: 2028 Democratic presidential nominee
+                    - generic [ref=e2043]: Gavin Newsom
+                  - generic [ref=e2044]:
+                    - generic [ref=e2045]: $128,291,586 vol
+                    - generic [ref=e2046]: 45 markets
+                - generic [ref=e2047]:
+                  - generic [ref=e2049]: 24%
+                  - generic [ref=e2050]: ––
+              - link "3 U.S. Open Winner Scottie Scheffler $90,817,531 vol 156 markets 14% ▲ 1" [ref=e2053] [cursor=pointer]:
+                - /url: /markets/kxpgatour/pga-tour/kxpgatour-uso26
+                - generic [ref=e2054]: "3"
+                - generic [ref=e2055]:
+                  - generic [ref=e2056]:
+                    - generic [ref=e2057]: U.S. Open Winner
+                    - generic [ref=e2058]: Scottie Scheffler
+                  - generic [ref=e2059]:
+                    - generic [ref=e2060]: $90,817,531 vol
+                    - generic [ref=e2061]: 156 markets
+                - generic [ref=e2062]:
+                  - generic [ref=e2064]: 14%
+                  - generic [ref=e2065]:
+                    - generic [ref=e2066]: ▲
+                    - generic [ref=e2067]: "1"
+      - contentinfo [ref=e2069]:
+        - generic [ref=e2070]:
+          - generic [ref=e2071]:
+            - generic [ref=e2072]:
+              - img [ref=e2073]
+              - generic [ref=e2075]:
+                - link "X (Twitter)" [ref=e2076] [cursor=pointer]:
+                  - /url: https://twitter.com/kalshi
+                  - img [ref=e2077]
+                - link "Instagram" [ref=e2079] [cursor=pointer]:
+                  - /url: https://instagram.com/kalshi/
+                  - img [ref=e2080]
+                - link "TikTok" [ref=e2082] [cursor=pointer]:
+                  - /url: https://www.tiktok.com/@kalshi
+                  - img [ref=e2083]
+                - link "Discord" [ref=e2085] [cursor=pointer]:
+                  - /url: https://discord.com/invite/kalshi
+                  - img [ref=e2086]
+                - link "Reddit" [ref=e2088] [cursor=pointer]:
+                  - /url: https://www.reddit.com/r/Kalshi/
+                  - img [ref=e2089]
+                - link "LinkedIn" [ref=e2091] [cursor=pointer]:
+                  - /url: https://linkedin.com/company/kalshi/
+                  - img [ref=e2092]
+            - generic [ref=e2094]:
+              - generic [ref=e2095]:
+                - generic [ref=e2096]: Product
+                - link "Perpetual Futures" [ref=e2097] [cursor=pointer]:
+                  - /url: /perps
+                - link "Markets" [ref=e2098] [cursor=pointer]:
+                  - /url: /
+                - link "Incentive program" [ref=e2099] [cursor=pointer]:
+                  - /url: /incentives
+                - link "Institutions" [ref=e2100] [cursor=pointer]:
+                  - /url: https://institutional.kalshi.com
+                - link "API & developers" [ref=e2101] [cursor=pointer]:
+                  - /url: https://docs.kalshi.com
+              - generic [ref=e2102]:
+                - generic [ref=e2103]: Company
+                - link "About" [ref=e2104] [cursor=pointer]:
+                  - /url: /about
+                - link "Kalshi Research" [ref=e2105] [cursor=pointer]:
+                  - /url: https://research.kalshi.com
+                - link "Blog" [ref=e2106] [cursor=pointer]:
+                  - /url: /blog
+                - link "Careers" [ref=e2107] [cursor=pointer]:
+                  - /url: /careers
+                - link "Policy Center" [ref=e2108] [cursor=pointer]:
+                  - /url: /policy-center/responsible-trading
+                - link "Brand Kit" [ref=e2109] [cursor=pointer]:
+                  - /url: /brandkit
+              - generic [ref=e2110]:
+                - generic [ref=e2111]: Help
+                - link "Help Center" [ref=e2112] [cursor=pointer]:
+                  - /url: https://help.kalshi.com
+                - link "FAQ" [ref=e2113] [cursor=pointer]:
+                  - /url: /faq
+                - link "Fee schedule" [ref=e2114] [cursor=pointer]:
+                  - /url: /fee-schedule
+                - link "Trading hours" [ref=e2115] [cursor=pointer]:
+                  - /url: https://help.kalshi.com/trading/what-are-trading-hours
+                - link "Regulatory" [ref=e2116] [cursor=pointer]:
+                  - /url: /regulatory
+          - separator [ref=e2117]
+          - generic [ref=e2118]:
+            - generic [ref=e2119]: © 2026 Kalshi Inc. · All rights reserved
+            - generic [ref=e2120]:
+              - link "Privacy" [ref=e2121] [cursor=pointer]:
+                - /url: /privacy-policy
+              - link "Data Terms of Service" [ref=e2122] [cursor=pointer]:
+                - /url: https://kalshi-public-docs.s3.amazonaws.com/kalshi-data-terms-of-service.pdf
+              - link "Trading Prohibitions" [ref=e2123] [cursor=pointer]:
+                - /url: https://kalshi-public-docs.s3.amazonaws.com/kalshi-source-agency-trading-prohibitions.pdf
+              - link "FAQ for Finance Professionals" [ref=e2124] [cursor=pointer]:
+                - /url: https://kalshi-public-docs.s3.amazonaws.com/kalshi_finance_faq.pdf
+          - generic [ref=e2125]: Trading on Kalshi involves risk and may not be appropriate for all. Members risk losing their cost to enter any transaction, including fees. You should carefully consider whether trading on Kalshi is appropriate for you in light of your investment experience and financial resources. Any trading decisions you make are solely your responsibility and at your own risk. Information is provided for convenience only on an "AS IS" basis. Past performance is not necessarily indicative of future results. Kalshi is subject to U.S. regulatory oversight by the CFTC.
+  - img
+  - img
+  - img
+  - generic [ref=e2126]: 98%
+  - img

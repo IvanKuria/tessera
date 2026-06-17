@@ -3,102 +3,74 @@ import Foundation
 /// A single candlestick / OHLC bucket for a market
 /// (`GET /series/{series}/markets/{ticker}/candlesticks`).
 ///
-/// Kalshi's candlestick payload nests price OHLC under sub-objects whose exact
-/// shape varies by version. To stay forgiving, every field is optional and the
-/// model flattens the most common fields; unknown extra keys are ignored.
+/// Verified shape (June 2026): each candle nests trade-based `price` OHLC plus
+/// `yes_bid`/`yes_ask` quote OHLC, all as `*_dollars` strings (0.0000–1.0000).
+/// `price.close` is null in periods with no trades, so use ``probability`` which
+/// falls back to the bid/ask mid for a gapless line.
 public struct Candlestick: Codable, Sendable, Hashable {
-    /// End of the bucket period as Unix epoch **seconds** (see `endPeriodDate`).
+    /// End of the bucket as Unix epoch **seconds** (see `endPeriodDate`).
     public var endPeriodTs: Int?
+    public var openInterestFp: KalshiDecimal?
+    public var volumeFp: KalshiDecimal?
+    /// Trade-based OHLC (open/high/low/close/mean/previous), dollars.
+    public var price: OHLC?
+    /// Best-bid quote OHLC, dollars.
+    public var yesBid: OHLC?
+    /// Best-ask quote OHLC, dollars.
+    public var yesAsk: OHLC?
 
-    /// OHLC, in cents.
-    public var open: Int?
-    public var high: Int?
-    public var low: Int?
-    public var close: Int?
+    /// Open/High/Low/Close (+ mean/previous) in dollar strings.
+    public struct OHLC: Codable, Sendable, Hashable {
+        public var openDollars: KalshiDecimal?
+        public var highDollars: KalshiDecimal?
+        public var lowDollars: KalshiDecimal?
+        public var closeDollars: KalshiDecimal?
+        public var meanDollars: KalshiDecimal?
+        public var previousDollars: KalshiDecimal?
 
-    public var yesBid: Int?
-    public var yesAsk: Int?
-    public var volume: Int?
-    public var openInterest: Int?
+        public init(
+            openDollars: KalshiDecimal? = nil, highDollars: KalshiDecimal? = nil,
+            lowDollars: KalshiDecimal? = nil, closeDollars: KalshiDecimal? = nil,
+            meanDollars: KalshiDecimal? = nil, previousDollars: KalshiDecimal? = nil
+        ) {
+            self.openDollars = openDollars; self.highDollars = highDollars
+            self.lowDollars = lowDollars; self.closeDollars = closeDollars
+            self.meanDollars = meanDollars; self.previousDollars = previousDollars
+        }
+    }
 
     /// Parsed end-of-period time.
     public var endPeriodDate: Date? { KalshiTime.date(fromUnixSeconds: endPeriodTs) }
 
-    private enum CodingKeys: String, CodingKey {
-        case endPeriodTs
-        case open, high, low, close
-        case yesBid, yesAsk, volume, openInterest
-        case price
-    }
-
-    /// Nested OHLC container some payloads use (`price.open`, …).
-    private struct OHLC: Codable {
-        var open: Int?
-        var high: Int?
-        var low: Int?
-        var close: Int?
-    }
-
-    public init(from decoder: any Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-
-        func optInt(_ key: CodingKeys) -> Int? {
-            (try? c.decodeIfPresent(Int.self, forKey: key)) ?? nil
+    /// Implied YES probability for this candle as a `Decimal` in `0…1`:
+    /// prefers the trade close, falls back to the mid of the bid/ask close so a
+    /// line chart has no gaps in periods without trades.
+    public var probability: Decimal? {
+        if let close = price?.closeDollars?.value { return close }
+        if let bid = yesBid?.closeDollars?.value, let ask = yesAsk?.closeDollars?.value {
+            return (bid + ask) / 2
         }
-
-        endPeriodTs = optInt(.endPeriodTs)
-
-        // Prefer top-level OHLC; fall back to a nested `price` object.
-        let nested: OHLC? = (try? c.decodeIfPresent(OHLC.self, forKey: .price)) ?? nil
-        open = optInt(.open) ?? nested?.open
-        high = optInt(.high) ?? nested?.high
-        low = optInt(.low) ?? nested?.low
-        close = optInt(.close) ?? nested?.close
-
-        yesBid = optInt(.yesBid)
-        yesAsk = optInt(.yesAsk)
-        volume = optInt(.volume)
-        openInterest = optInt(.openInterest)
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var c = encoder.container(keyedBy: CodingKeys.self)
-        try c.encodeIfPresent(endPeriodTs, forKey: .endPeriodTs)
-        try c.encodeIfPresent(open, forKey: .open)
-        try c.encodeIfPresent(high, forKey: .high)
-        try c.encodeIfPresent(low, forKey: .low)
-        try c.encodeIfPresent(close, forKey: .close)
-        try c.encodeIfPresent(yesBid, forKey: .yesBid)
-        try c.encodeIfPresent(yesAsk, forKey: .yesAsk)
-        try c.encodeIfPresent(volume, forKey: .volume)
-        try c.encodeIfPresent(openInterest, forKey: .openInterest)
+        return yesAsk?.closeDollars?.value ?? yesBid?.closeDollars?.value
     }
 
     public init(
         endPeriodTs: Int? = nil,
-        open: Int? = nil,
-        high: Int? = nil,
-        low: Int? = nil,
-        close: Int? = nil,
-        yesBid: Int? = nil,
-        yesAsk: Int? = nil,
-        volume: Int? = nil,
-        openInterest: Int? = nil
+        openInterestFp: KalshiDecimal? = nil,
+        volumeFp: KalshiDecimal? = nil,
+        price: OHLC? = nil,
+        yesBid: OHLC? = nil,
+        yesAsk: OHLC? = nil
     ) {
         self.endPeriodTs = endPeriodTs
-        self.open = open
-        self.high = high
-        self.low = low
-        self.close = close
+        self.openInterestFp = openInterestFp
+        self.volumeFp = volumeFp
+        self.price = price
         self.yesBid = yesBid
         self.yesAsk = yesAsk
-        self.volume = volume
-        self.openInterest = openInterest
     }
 }
 
-/// Candlesticks endpoint envelope. No cursor is documented, but one is accepted
-/// defensively in case the API adds pagination.
+/// Candlesticks endpoint envelope.
 public struct CandlesticksResponse: Codable, Sendable, Hashable {
     public var candlesticks: [Candlestick]
     public var cursor: String?

@@ -17,9 +17,11 @@ public enum KalshiEnvironment: Sendable, Equatable {
     public var restBaseURL: URL {
         switch self {
         case .production:
-            return URL(string: "https://external-api.kalshi.com/trade-api/v2")!
+            // `api.elections.kalshi.com` is the current public base and serves the
+            // order book keyless (the `external-api` host 401s on the order book).
+            return URL(string: "https://api.elections.kalshi.com/trade-api/v2")!
         case .demo:
-            return URL(string: "https://external-api.demo.kalshi.co/trade-api/v2")!
+            return URL(string: "https://demo-api.kalshi.co/trade-api/v2")!
         case .custom(let rest, _):
             return rest
         }
@@ -29,10 +31,9 @@ public enum KalshiEnvironment: Sendable, Equatable {
     public var webSocketURL: URL {
         switch self {
         case .production:
-            return URL(string: "wss://external-api-ws.kalshi.com/trade-api/ws/v2")!
+            return URL(string: "wss://api.elections.kalshi.com/trade-api/ws/v2")!
         case .demo:
-            // Demo WS URL is not clearly documented; mirror the prod path on the demo host.
-            return URL(string: "wss://external-api-ws.demo.kalshi.co/trade-api/ws/v2")!
+            return URL(string: "wss://demo-api.kalshi.co/trade-api/ws/v2")!
         case .custom(_, let webSocket):
             return webSocket
         }
