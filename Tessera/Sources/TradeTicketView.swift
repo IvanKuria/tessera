@@ -237,6 +237,7 @@ struct TradeTicketView: View {
         VStack(spacing: 10) {
             previewRow("Odds", value: impliedPercent.map { "\($0)% chance" } ?? "—")
             previewRow("Est. cost", value: currency(estCostCents))
+            previewRow("Est. fee", value: estFeeCents > 0 ? currency(estFeeCents) : "—")
             previewRow("Max payout", value: currency(count * 100))
         }
         .padding(14)
@@ -438,6 +439,17 @@ struct TradeTicketView: View {
         (unitPriceCents ?? 0) * count
     }
 
+    /// Estimated Kalshi trading fee, in cents. A resting limit order pays the
+    /// maker rate; a market order pays taker. Kalshi does not surface this in its
+    /// own UI — showing it (and that it peaks near 50¢) is a trust win.
+    private var estFeeCents: Int {
+        KalshiFees.tradingFeeCents(
+            contracts: count,
+            priceCents: unitPriceCents ?? 0,
+            role: isLimit ? .maker : .taker
+        )
+    }
+
     private var confirmSummary: String {
         let verb = action == .buy ? "Buy" : "Sell"
         let sideLabel = side == .yes ? "YES" : "NO"
@@ -449,7 +461,8 @@ struct TradeTicketView: View {
         } else {
             pricePart = "(market)"
         }
-        return "\(verb) \(count) \(sideLabel) \(pricePart) — est. cost \(currency(estCostCents)). Place order?"
+        let feePart = estFeeCents > 0 ? " + \(currency(estFeeCents)) fee" : ""
+        return "\(verb) \(count) \(sideLabel) \(pricePart) — est. cost \(currency(estCostCents))\(feePart). Place order?"
     }
 
     // MARK: - Formatting

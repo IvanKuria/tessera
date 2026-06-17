@@ -18,6 +18,9 @@ targets:
     dependencies:
       - package: KalshiKit
         product: KalshiKit
+      # Embed the widget extension into Contents/PlugIns.
+      - target: TesseraWidget
+        embed: true
     info:
       path: Sources/Info.plist
       properties:
@@ -37,7 +40,48 @@ targets:
         SWIFT_VERSION: "6.0"
         MACOSX_DEPLOYMENT_TARGET: "14.0"
         ENABLE_HARDENED_RUNTIME: YES
-        # Local/dev builds: allow building unsigned. Real distribution signs with
-        # a Developer ID (see milestone 7).
+        # App Group entitlement (shared cache with the widget) + notifications.
+        CODE_SIGN_ENTITLEMENTS: Tessera.entitlements
+        # App Groups + a signed widget extension require a real Apple Developer
+        # team. Set DEVELOPMENT_TEAM to your 10-char Team ID; ad-hoc "-" signing
+        # will NOT provision App Groups. Until then the app falls back to its
+        # Application Support cache (see AppGroup.containerURL).
+        DEVELOPMENT_TEAM: "" # TODO: set your Apple Developer Team ID
         CODE_SIGN_STYLE: Automatic
-        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_IDENTITY: "Apple Development"
+
+  TesseraWidget:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: WidgetSources
+      # Share the App Group helper + snapshot models with the app (single
+      # source of truth for the shared container + types).
+      - path: Sources/Shared
+    dependencies:
+      - package: KalshiKit
+        product: KalshiKit
+    info:
+      path: WidgetSources/Info.plist
+      properties:
+        CFBundleDisplayName: Tessera Odds
+        CFBundleName: TesseraWidget
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        # Required for a WidgetKit extension; xcodegen generates this plist from
+        # these properties, so it must live here (not hand-written in the file).
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.tessera.Tessera.TesseraWidget
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "6.0"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_ENTITLEMENTS: TesseraWidget.entitlements
+        DEVELOPMENT_TEAM: "" # TODO: set your Apple Developer Team ID (same as app)
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "Apple Development"

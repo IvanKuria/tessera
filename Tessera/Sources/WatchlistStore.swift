@@ -1,5 +1,6 @@
 import Foundation
 import KalshiKit
+import WidgetKit
 
 /// A single tradeable outcome within an event (one Kalshi market), display-ready.
 struct OutcomeVM: Identifiable, Sendable, Hashable {
@@ -76,6 +77,7 @@ final class WatchlistStore {
             lastUpdated = Date()
             errorMessage = nil
             saveCache(response.events)
+            publishWidgetSnapshot()
         } catch {
             errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         }
@@ -85,6 +87,21 @@ final class WatchlistStore {
         let vms = Self.build(from: rawEvents)
         events = vms
         categories = ["All"] + vms.map(\.category).uniqued().sorted()
+    }
+
+    // MARK: - Widget snapshot
+
+    /// Writes a compact odds snapshot to the App Group container and asks the
+    /// widget to reload. The widget reads this file (it can't open a socket of
+    /// its own), so the app is the single source of fresh odds.
+    private func publishWidgetSnapshot() {
+        let outcomes = events.prefix(8).compactMap { event -> WidgetOutcome? in
+            guard let percent = event.topOutcome?.percent else { return nil }
+            return WidgetOutcome(id: event.id, title: event.title, percent: percent)
+        }
+        let snapshot = WidgetSnapshot(outcomes: Array(outcomes), updated: lastUpdated ?? Date())
+        AppGroup.write(snapshot, to: AppGroup.widgetSnapshotURL)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     // MARK: - Shaping
