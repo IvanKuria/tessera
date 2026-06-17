@@ -15,7 +15,7 @@ struct EventCardView: View {
             Button(action: onOpen) {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .center, spacing: 9) {
-                        CategoryIcon(category: event.category, size: 26)
+                        EventIcon(event: event, size: 26)
                         Eyebrow(text: event.category)
                         Spacer()
                         if event.isBinary, let p = event.topOutcome?.percent {

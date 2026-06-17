@@ -54,7 +54,7 @@ struct DetailView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center, spacing: 14) {
-                CategoryIcon(category: event.category, size: 46)
+                EventIcon(event: event, size: 46)
                 VStack(alignment: .leading, spacing: 6) {
                     Eyebrow(text: event.category)
                     Text(event.title)
