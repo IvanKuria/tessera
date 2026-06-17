@@ -14,7 +14,8 @@ struct EventCardView: View {
         VStack(alignment: .leading, spacing: 12) {
             Button(action: onOpen) {
                 VStack(alignment: .leading, spacing: 10) {
-                    HStack(alignment: .top) {
+                    HStack(alignment: .center, spacing: 9) {
+                        CategoryIcon(category: event.category, size: 26)
                         Eyebrow(text: event.category)
                         Spacer()
                         if event.isBinary, let p = event.topOutcome?.percent {
@@ -55,8 +56,11 @@ struct EventCardView: View {
 
     private var outcomePreview: some View {
         VStack(spacing: 9) {
-            ForEach(event.outcomes.prefix(2)) { outcome in
+            ForEach(Array(event.outcomes.prefix(2).enumerated()), id: \.element.id) { index, outcome in
                 HStack(spacing: 10) {
+                    Circle()
+                        .fill(Color(hex: DetailStore.linePalette[index % DetailStore.linePalette.count]))
+                        .frame(width: 8, height: 8)
                     Text(outcome.label)
                         .font(Theme.ui(13.5)).foregroundStyle(Theme.text)
                         .lineLimit(1)

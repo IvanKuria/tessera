@@ -28,26 +28,30 @@ struct DetailView: View {
         .background(Theme.bg)
         .navigationTitle("")
         .task {
-            let focus = event.topOutcome?.id ?? ""
-            selectedOutcomeID = focus
-            await store.load(seriesTicker: event.seriesTicker, marketTicker: focus)
+            selectedOutcomeID = event.topOutcome?.id
+            await store.load(event: event)
         }
         .onChange(of: store.timeframe) { _, _ in
-            Task { await store.reloadCandles() }
+            Task { await store.loadChartSeries() }
         }
     }
 
     // MARK: - Header
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Eyebrow(text: event.category)
-            Text(event.title)
-                .font(Theme.condensed(26, .semibold))
-                .foregroundStyle(Theme.text)
-                .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 14) {
+                CategoryIcon(category: event.category, size: 46)
+                VStack(alignment: .leading, spacing: 6) {
+                    Eyebrow(text: event.category)
+                    Text(event.title)
+                        .font(Theme.condensed(26, .semibold))
+                        .foregroundStyle(Theme.text)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
             statsStrip
-                .padding(.top, 4)
+                .padding(.top, 2)
         }
     }
 
@@ -129,32 +133,37 @@ struct DetailView: View {
 
     private func outcomeRow(_ outcome: OutcomeVM) -> some View {
         let isSelected = outcome.id == selectedOutcomeID
-        return Button {
-            selectedOutcomeID = outcome.id
-            Task { await store.focus(marketTicker: outcome.id) }
-        } label: {
-            HStack(spacing: 14) {
-                Text(outcome.label)
-                    .font(Theme.ui(14, isSelected ? .semibold : .regular))
-                    .foregroundStyle(Theme.text)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                ProbabilityBar(percent: outcome.percent ?? 0)
-                    .frame(width: 90)
-                Text(outcome.percent.map { "\($0)%" } ?? "—")
-                    .font(Theme.num(14, .semibold))
-                    .foregroundStyle(Theme.text)
-                    .frame(width: 48, alignment: .trailing)
-                QuickBuyButton(side: .yes, cents: outcome.yesCents) {
-                    onBuy(outcome.id, .yes)
+        let dot = store.color(forOutcome: outcome.id)
+        return HStack(spacing: 12) {
+            // Tapping the label area focuses this outcome (updates book/trades).
+            Button {
+                selectedOutcomeID = outcome.id
+                Task { await store.focus(marketTicker: outcome.id) }
+            } label: {
+                HStack(spacing: 11) {
+                    Circle().fill(dot ?? Theme.textTertiary.opacity(0.4)).frame(width: 9, height: 9)
+                    Text(outcome.label)
+                        .font(Theme.ui(14, isSelected ? .semibold : .regular))
+                        .foregroundStyle(Theme.text)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(outcome.percent.map { "\($0)%" } ?? "—")
+                        .font(Theme.num(15, .semibold))
+                        .foregroundStyle(Theme.text)
+                        .frame(width: 52, alignment: .trailing)
                 }
-                .frame(width: 96)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(isSelected ? Theme.subtle : Color.clear)
+            .buttonStyle(.plain)
+
+            QuickBuyButton(side: .yes, cents: outcome.yesCents) { onBuy(outcome.id, .yes) }
+                .frame(width: 86)
+            QuickBuyButton(side: .no, cents: outcome.noCents) { onBuy(outcome.id, .no) }
+                .frame(width: 86)
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 11)
+        .background(isSelected ? Theme.subtle : Color.clear)
     }
 
     // MARK: - Shared pieces
@@ -163,7 +172,7 @@ struct DetailView: View {
         // Timeframe changes are observed by `.onChange(of: store.timeframe)`, which
         // refetches candles — so the selector only needs to mutate the binding.
         PriceChartView(
-            points: store.chartPoints,
+            series: store.chartSeries,
             isLoading: store.isLoading,
             timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 })
         )
