@@ -5,26 +5,15 @@ import KalshiKit
 /// Implied-probability line chart with hover scrubbing and a Kalshi-style
 /// text-only timeframe selector beneath it.
 struct PriceChartView: View {
-    let candles: [Candlestick]
+    /// Pre-downsampled, stably-identified points (prepared in `DetailStore`).
+    let points: [DetailStore.ChartPoint]
     let isLoading: Bool
     @Binding var timeframe: DetailStore.Timeframe
     var onTimeframeChange: () -> Void = {}
 
-    /// One charted sample: time × implied percent (0…100).
-    private struct Point: Identifiable {
-        let id = UUID()
-        let date: Date
-        let percent: Double
-    }
+    private typealias Point = DetailStore.ChartPoint
 
     @State private var selectedDate: Date?
-
-    private var points: [Point] {
-        candles.compactMap { candle in
-            guard let date = candle.endPeriodDate, let prob = candle.probability else { return nil }
-            return Point(date: date, percent: NSDecimalNumber(decimal: prob * 100).doubleValue)
-        }
-    }
 
     /// Green when the window closed up (or flat), red when down.
     private var lineColor: Color {

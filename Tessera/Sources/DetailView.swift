@@ -163,7 +163,7 @@ struct DetailView: View {
         // Timeframe changes are observed by `.onChange(of: store.timeframe)`, which
         // refetches candles — so the selector only needs to mutate the binding.
         PriceChartView(
-            candles: store.candles,
+            points: store.chartPoints,
             isLoading: store.isLoading,
             timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 })
         )

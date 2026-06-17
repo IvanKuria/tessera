@@ -54,7 +54,7 @@ final class WatchlistStore {
             while !Task.isCancelled {
                 guard let self else { break }
                 await self.refresh()
-                try? await Task.sleep(for: .seconds(15))
+                try? await Task.sleep(for: .seconds(30))
             }
         }
     }
@@ -68,7 +68,11 @@ final class WatchlistStore {
             let response = try await client.events(
                 status: "open", withNestedMarkets: true, limit: 200
             )
-            apply(events: response.events)
+            // Shape 200 nested-market events off the main thread to avoid UI hitches.
+            let raw = response.events
+            let vms = await Task.detached(priority: .userInitiated) { Self.build(from: raw) }.value
+            events = vms
+            categories = ["All"] + vms.map(\.category).uniqued().sorted()
             lastUpdated = Date()
             errorMessage = nil
             saveCache(response.events)
@@ -85,9 +89,9 @@ final class WatchlistStore {
 
     // MARK: - Shaping
 
-    private static let iso = ISO8601DateFormatter()
+    nonisolated(unsafe) private static let iso = ISO8601DateFormatter()
 
-    static func build(from rawEvents: [Event]) -> [EventVM] {
+    nonisolated static func build(from rawEvents: [Event]) -> [EventVM] {
         var result: [EventVM] = []
         for event in rawEvents {
             // Drop multivariate same-game parlays (KXMVE…) — illiquid, ugly titles.
@@ -131,12 +135,12 @@ final class WatchlistStore {
         return Array(result.prefix(60))
     }
 
-    private static func cents(_ value: KalshiDecimal?) -> Int? {
+    nonisolated private static func cents(_ value: KalshiDecimal?) -> Int? {
         guard let value else { return nil }
         return Int(NSDecimalNumber(decimal: value.value * 100).doubleValue.rounded())
     }
 
-    private static func cleanLabel(_ raw: String) -> String {
+    nonisolated private static func cleanLabel(_ raw: String) -> String {
         var s = raw
         for prefix in ["yes ", "no ", "Yes ", "No "] where s.hasPrefix(prefix) {
             s = String(s.dropFirst(prefix.count))
