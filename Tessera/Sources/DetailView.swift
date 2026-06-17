@@ -44,7 +44,6 @@ struct DetailView: View {
     private func select(_ id: String) {
         if selectedOutcomeID == id {
             selectedOutcomeID = nil
-            chartMode = .line          // candles need a single focused market
         } else {
             selectedOutcomeID = id
             Task { await store.focus(marketTicker: id) }
@@ -186,17 +185,29 @@ struct DetailView: View {
 
     // MARK: - Shared pieces
 
-    /// Candles need a single focused market: binary always, multi-outcome only
-    /// after an outcome is selected.
-    private var canShowCandles: Bool { event.isBinary || selectedOutcomeID != nil }
+    /// Label of the market the candles are charting (multi-outcome → the focused
+    /// outcome, which defaults to the leader).
+    private var candleOutcomeLabel: String? {
+        guard !event.isBinary else { return nil }
+        return event.outcomes.first { $0.id == store.focusedMarketTicker }?.label
+            ?? event.topOutcome?.label
+    }
 
     private var chart: some View {
         // Timeframe changes are observed by `.onChange(of: store.timeframe)`, which
         // refetches both the line series and candles.
         VStack(alignment: .leading, spacing: 10) {
-            if canShowCandles { chartModeToggle }
+            HStack(spacing: 10) {
+                chartModeToggle
+                if chartMode == .candles, let label = candleOutcomeLabel {
+                    Text("· \(label)")
+                        .font(Theme.ui(12, .medium)).foregroundStyle(Theme.textSecondary)
+                        .lineLimit(1)
+                }
+                Spacer()
+            }
 
-            if chartMode == .candles && canShowCandles {
+            if chartMode == .candles {
                 CandleChartView(
                     candles: store.focusedCandles,
                     isLoading: store.isLoading,
