@@ -188,12 +188,17 @@ final class AccountStore {
     /// Places a buy/sell order. If `limitCents` is non-nil a LIMIT order is built
     /// (price on the chosen side); otherwise a MARKET order. Refreshes the
     /// account on success. Returns the SDK `Order` or the underlying error.
+    /// `clientOrderId` is the server-side idempotency key. Leave it `nil` for
+    /// interactive orders (a fresh UUID is generated). The synthetic-order engine
+    /// passes a STABLE id derived from the trigger so an ambiguous retry after a
+    /// timeout dedupes to the same order rather than firing twice.
     func placeOrder(
         marketTicker: String,
         action: OrderAction,
         side: OrderSide,
         count: Int,
-        limitCents: Int?
+        limitCents: Int?,
+        clientOrderId: String? = nil
     ) async -> Result<Order, Error> {
         guard isSignedIn, let client else {
             return .failure(TradeError.notSignedIn)
@@ -206,6 +211,7 @@ final class AccountStore {
         defer { isWorking = false }
         lastError = nil
 
+        let orderId = clientOrderId ?? UUID().uuidString
         let request: CreateOrderRequest
         if let limitCents {
             let clamped = min(99, max(1, limitCents))
@@ -220,7 +226,7 @@ final class AccountStore {
                 // Omit time_in_force → a resting limit (GTC) by default; sending an
                 // unexpected TIF value can be rejected as "invalid order".
                 timeInForce: nil,
-                clientOrderId: UUID().uuidString,
+                clientOrderId: orderId,
                 buyMaxCost: nil
             )
         } else {
@@ -233,7 +239,7 @@ final class AccountStore {
                 yesPrice: nil,
                 noPrice: nil,
                 timeInForce: nil,
-                clientOrderId: UUID().uuidString,
+                clientOrderId: orderId,
                 buyMaxCost: nil
             )
         }

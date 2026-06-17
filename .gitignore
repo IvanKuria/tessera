@@ -19,3 +19,6 @@ Tessera/Tessera.xcodeproj/
 # Secrets — never commit API keys or PEMs
 *.pem
 .env
+
+# Deterministic xcodebuild output
+Tessera/build/
