@@ -28,11 +28,21 @@ struct DetailView: View {
         .background(Theme.bg)
         .navigationTitle("")
         .task {
-            selectedOutcomeID = event.topOutcome?.id
             await store.load(event: event)
         }
         .onChange(of: store.timeframe) { _, _ in
             Task { await store.loadChartSeries() }
+        }
+    }
+
+    /// Toggle which outcome is emphasized on the chart (and focus its book/trades).
+    /// Tapping the selected one again clears the highlight so every line shows.
+    private func select(_ id: String) {
+        if selectedOutcomeID == id {
+            selectedOutcomeID = nil
+        } else {
+            selectedOutcomeID = id
+            Task { await store.focus(marketTicker: id) }
         }
     }
 
@@ -137,8 +147,7 @@ struct DetailView: View {
         return HStack(spacing: 12) {
             // Tapping the label area focuses this outcome (updates book/trades).
             Button {
-                selectedOutcomeID = outcome.id
-                Task { await store.focus(marketTicker: outcome.id) }
+                select(outcome.id)
             } label: {
                 HStack(spacing: 11) {
                     Circle().fill(dot ?? Theme.textTertiary.opacity(0.4)).frame(width: 9, height: 9)
@@ -174,7 +183,9 @@ struct DetailView: View {
         PriceChartView(
             series: store.chartSeries,
             isLoading: store.isLoading,
-            timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 })
+            timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 }),
+            highlightedID: selectedOutcomeID,
+            onSelectSeries: { select($0) }
         )
     }
 

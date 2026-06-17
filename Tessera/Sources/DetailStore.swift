@@ -109,7 +109,7 @@ final class DetailStore {
         let client = self.client
         let series = seriesTicker
         let palette = Self.linePalette
-        let chosen = Array(event.outcomes.prefix(event.isBinary ? 1 : 5))
+        let chosen = Array(event.outcomes.prefix(event.isBinary ? 1 : 4))
 
         let fetched: [Int: [Candlestick]] = await withTaskGroup(of: (Int, [Candlestick]).self) { group in
             for (index, outcome) in chosen.enumerated() {

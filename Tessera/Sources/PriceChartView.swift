@@ -10,9 +10,35 @@ struct PriceChartView: View {
     let isLoading: Bool
     @Binding var timeframe: DetailStore.Timeframe
     var onTimeframeChange: () -> Void = {}
+    /// When set, that outcome's line is emphasized and the others fade back.
+    var highlightedID: String? = nil
+    var onSelectSeries: (String) -> Void = { _ in }
 
     private typealias Point = DetailStore.ChartPoint
     @State private var selectedDate: Date?
+
+    /// Only emphasize when the highlighted outcome actually has a line here
+    /// (outcomes outside the charted top-N leave every line at full strength).
+    private var activeHighlight: String? {
+        guard let h = highlightedID, series.contains(where: { $0.id == h }) else { return nil }
+        return h
+    }
+
+    // Per-line emphasis driven by `activeHighlight`.
+    private func lineOpacity(_ line: DetailStore.SeriesLine) -> Double {
+        guard let h = activeHighlight else { return isMulti ? 0.9 : 1 }
+        return h == line.id ? 1 : 0.14
+    }
+    private func lineWidth(_ line: DetailStore.SeriesLine) -> Double {
+        guard let h = activeHighlight else { return isMulti ? 1.7 : 2 }
+        return h == line.id ? 2.6 : 1.2
+    }
+    private func showsDot(_ line: DetailStore.SeriesLine) -> Bool {
+        activeHighlight == nil || activeHighlight == line.id
+    }
+    private func legendOpacity(_ line: DetailStore.SeriesLine) -> Double {
+        activeHighlight == nil || activeHighlight == line.id ? 1 : 0.4
+    }
 
     /// 3+ lines = candidate chart (no fill/hover). 2 = binary Yes/No.
     private var isMulti: Bool { series.count > 2 }
@@ -28,15 +54,22 @@ struct PriceChartView: View {
     }
 
     private var legend: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             ForEach(series) { line in
-                HStack(spacing: 6) {
-                    Circle().fill(line.color).frame(width: 8, height: 8)
-                    Text(line.label).font(Theme.ui(12, .medium)).foregroundStyle(Theme.text).lineLimit(1)
-                    if let p = line.lastPercent {
-                        Text("\(Int(p.rounded()))%").font(Theme.num(12, .semibold)).foregroundStyle(Theme.textSecondary)
+                Button { onSelectSeries(line.id) } label: {
+                    HStack(spacing: 6) {
+                        Circle().fill(line.color).frame(width: 8, height: 8)
+                        Text(line.label)
+                            .font(Theme.ui(12, highlightedID == line.id ? .semibold : .medium))
+                            .foregroundStyle(Theme.text).lineLimit(1)
+                        if let p = line.lastPercent {
+                            Text("\(Int(p.rounded()))%").font(Theme.num(12, .semibold)).foregroundStyle(Theme.textSecondary)
+                        }
                     }
+                    .opacity(legendOpacity(line))
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
             Spacer(minLength: 0)
         }
@@ -79,8 +112,8 @@ struct PriceChartView: View {
                         series: .value("Outcome", line.id)
                     )
                     .interpolationMethod(.monotone)
-                    .foregroundStyle(line.color)
-                    .lineStyle(StrokeStyle(lineWidth: 2))
+                    .foregroundStyle(line.color.opacity(lineOpacity(line)))
+                    .lineStyle(StrokeStyle(lineWidth: lineWidth(line)))
                 }
 
                 // Fill only under the primary (Yes) line, and only on binary charts.
@@ -94,10 +127,10 @@ struct PriceChartView: View {
                     }
                 }
 
-                if let last = line.points.last {
+                if showsDot(line), let last = line.points.last {
                     PointMark(x: .value("Time", last.date), y: .value("Percent", last.percent))
-                        .foregroundStyle(line.color)
-                        .symbolSize(55)
+                        .foregroundStyle(line.color.opacity(lineOpacity(line)))
+                        .symbolSize(highlightedID == line.id ? 75 : 55)
                 }
             }
 
