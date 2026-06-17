@@ -91,15 +91,21 @@ struct PriceChartView: View {
         ZStack { content() }.frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var singleLineColor: Color {
-        guard let pts = series.first?.points, let first = pts.first?.percent, let last = pts.last?.percent
-        else { return Theme.yes }
-        return series.first?.color ?? (last >= first ? Theme.yes : Theme.no)
+    /// Nearest point in a line to a given date.
+    private func nearestPoint(_ line: DetailStore.SeriesLine, to date: Date) -> Point? {
+        line.points.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
     }
 
-    private var selectedPoint: Point? {
-        guard !isMulti, let selectedDate, let pts = series.first?.points else { return nil }
-        return pts.min { abs($0.date.timeIntervalSince(selectedDate)) < abs($1.date.timeIntervalSince(selectedDate)) }
+    /// Snapped crosshair date = the first line's point nearest the cursor.
+    private var crosshairDate: Date? {
+        guard let selectedDate, let first = series.first else { return nil }
+        return nearestPoint(first, to: selectedDate)?.date
+    }
+
+    /// Lines shown in the tooltip: just the emphasized one, or all of them.
+    private var tooltipLines: [DetailStore.SeriesLine] {
+        if let h = activeHighlight { return series.filter { $0.id == h } }
+        return series
     }
 
     private var chart: some View {
@@ -134,15 +140,20 @@ struct PriceChartView: View {
                 }
             }
 
-            if let sp = selectedPoint {
-                RuleMark(x: .value("Time", sp.date))
+            if let cd = crosshairDate {
+                RuleMark(x: .value("Time", cd))
                     .foregroundStyle(Theme.textTertiary.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                     .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
-                        crosshairLabel(sp)
+                        crosshairTooltip(date: cd)
                     }
-                PointMark(x: .value("Time", sp.date), y: .value("Percent", sp.percent))
-                    .foregroundStyle(singleLineColor).symbolSize(60)
+                ForEach(tooltipLines) { line in
+                    if let p = nearestPoint(line, to: cd) {
+                        PointMark(x: .value("Time", cd), y: .value("Percent", p.percent))
+                            .foregroundStyle(line.color)
+                            .symbolSize(55)
+                    }
+                }
             }
         }
         .chartYScale(domain: 0...100)
@@ -161,18 +172,34 @@ struct PriceChartView: View {
                 AxisValueLabel().font(Theme.num(9.5)).foregroundStyle(Theme.textTertiary)
             }
         }
-        .chartXSelection(value: isMulti ? .constant(nil) : $selectedDate)
+        .chartXSelection(value: $selectedDate)
     }
 
-    private func crosshairLabel(_ p: Point) -> some View {
-        VStack(spacing: 1) {
-            Text("\(Int(p.percent.rounded()))%").font(Theme.num(13, .semibold)).foregroundStyle(Theme.text)
-            Text(p.date.formatted(date: .abbreviated, time: .shortened))
+    /// Tooltip listing the date and each visible line's value at the cursor.
+    private func crosshairTooltip(date: Date) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(date.formatted(date: .abbreviated, time: .shortened))
                 .font(Theme.num(9.5)).foregroundStyle(Theme.textTertiary)
+            ForEach(tooltipLines) { line in
+                if let p = nearestPoint(line, to: date) {
+                    HStack(spacing: 5) {
+                        Circle().fill(line.color).frame(width: 6, height: 6)
+                        if series.count > 1 {
+                            Text(line.label).font(Theme.ui(10.5, .medium))
+                                .foregroundStyle(Theme.textSecondary).lineLimit(1)
+                        }
+                        Spacer(minLength: 6)
+                        Text("\(Int(p.percent.rounded()))%")
+                            .font(Theme.num(11, .semibold)).foregroundStyle(Theme.text)
+                    }
+                }
+            }
         }
-        .padding(.horizontal, 8).padding(.vertical, 5)
+        .frame(minWidth: series.count > 1 ? 120 : 44)
+        .padding(.horizontal, 8).padding(.vertical, 6)
         .background(RoundedRectangle(cornerRadius: 8).fill(Theme.surface)
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1)))
+        .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
     }
 
     private var selector: some View {
