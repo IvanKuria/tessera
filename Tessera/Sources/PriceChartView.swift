@@ -14,12 +14,14 @@ struct PriceChartView: View {
     private typealias Point = DetailStore.ChartPoint
     @State private var selectedDate: Date?
 
-    private var isMulti: Bool { series.count > 1 }
+    /// 3+ lines = candidate chart (no fill/hover). 2 = binary Yes/No.
+    private var isMulti: Bool { series.count > 2 }
+    private var showLegend: Bool { series.count >= 2 }
     private var hasData: Bool { series.contains { $0.points.count >= 2 } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if isMulti { legend }
+            if showLegend { legend }
             chartArea.frame(height: 240)
             selector
         }
@@ -81,7 +83,8 @@ struct PriceChartView: View {
                     .lineStyle(StrokeStyle(lineWidth: 2))
                 }
 
-                if !isMulti {
+                // Fill only under the primary (Yes) line, and only on binary charts.
+                if !isMulti, line.id == series.first?.id {
                     ForEach(line.points) { p in
                         AreaMark(x: .value("Time", p.date), y: .value("Percent", p.percent))
                             .interpolationMethod(.monotone)

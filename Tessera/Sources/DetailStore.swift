@@ -127,12 +127,25 @@ final class DetailStore {
             return byIndex
         }
 
-        chartSeries = chosen.enumerated().compactMap { index, outcome in
+        var lines = chosen.enumerated().compactMap { index, outcome -> SeriesLine? in
             let points = Self.downsample(fetched[index] ?? [])
             guard points.count >= 2 else { return nil }
             return SeriesLine(id: outcome.id, label: outcome.label,
                               colorHex: palette[index % palette.count], points: points)
         }
+
+        // Binary market: pair the green YES line with a mirrored red NO line
+        // (NO% = 100 − YES%), the way Kalshi shows both sides.
+        if event.isBinary, let yes = lines.first {
+            let noPoints = yes.points.map {
+                ChartPoint(id: $0.id, date: $0.date, percent: 100 - $0.percent)
+            }
+            lines = [
+                SeriesLine(id: yes.id, label: "Yes", colorHex: 0x0AC285, points: yes.points),
+                SeriesLine(id: yes.id + "·NO", label: "No", colorHex: 0xD91616, points: noPoints),
+            ]
+        }
+        chartSeries = lines
     }
 
     /// Color assigned to a given outcome's line, for tying list rows to the chart.
