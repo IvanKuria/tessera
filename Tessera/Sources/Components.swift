@@ -120,6 +120,31 @@ struct Wordmark: View {
     }
 }
 
+/// A live, pulsing dot — a solid core with a halo that expands and fades,
+/// marking the leading (latest) edge of a chart line.
+struct PulsingDot: View {
+    let color: Color
+    @State private var animate = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color.opacity(0.35))
+                .frame(width: 16, height: 16)
+                .scaleEffect(animate ? 2.4 : 0.7)
+                .opacity(animate ? 0 : 0.7)
+            Circle()
+                .fill(color)
+                .frame(width: 7, height: 7)
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false)) {
+                animate = true
+            }
+        }
+    }
+}
+
 /// A small labeled stat (used in detail headers): value over caption.
 struct StatBlock: View {
     let label: String

@@ -122,11 +122,6 @@ struct PriceChartView: View {
                     .lineStyle(StrokeStyle(lineWidth: lineWidth(line)))
                 }
 
-                if showsDot(line), let last = line.points.last {
-                    PointMark(x: .value("Time", last.date), y: .value("Percent", last.percent))
-                        .foregroundStyle(line.color.opacity(lineOpacity(line)))
-                        .symbolSize(highlightedID == line.id ? 75 : 55)
-                }
             }
 
             if let cd = crosshairDate {
@@ -162,6 +157,21 @@ struct PriceChartView: View {
             }
         }
         .chartXSelection(value: $selectedDate)
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                if let plotFrame = proxy.plotFrame {
+                    let rect = geo[plotFrame]
+                    ForEach(series) { line in
+                        if showsDot(line), let last = line.points.last,
+                           let x = proxy.position(forX: last.date),
+                           let y = proxy.position(forY: last.percent) {
+                            PulsingDot(color: line.color.opacity(lineOpacity(line)))
+                                .position(x: rect.minX + x, y: rect.minY + y)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /// Tooltip listing the date and each visible line's value at the cursor.
