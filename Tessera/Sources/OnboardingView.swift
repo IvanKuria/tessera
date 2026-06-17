@@ -11,6 +11,7 @@ struct OnboardingView: View {
     @State private var keyID: String = ""
     @State private var pem: String = ""
     @State private var selectedEnv: AccountStore.Env = .demo
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         ScrollView {
@@ -29,6 +30,19 @@ struct OnboardingView: View {
             .frame(maxWidth: 460, alignment: .leading)
         }
         .background(Theme.bg)
+        .overlay(alignment: .topTrailing) {
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(Theme.subtle))
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.cancelAction)  // Esc also dismisses
+            .padding(12)
+        }
     }
 
     // MARK: - Sections
