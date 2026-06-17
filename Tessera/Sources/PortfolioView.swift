@@ -8,6 +8,8 @@ import KalshiKit
 struct PortfolioView: View {
     var store: PortfolioStore
     var onClose: () -> Void = {}
+    /// Hidden when embedded as a sidebar section (no sheet to dismiss).
+    var showsClose: Bool = true
 
     @Environment(\.dismiss) private var dismiss
 
@@ -59,18 +61,20 @@ struct PortfolioView: View {
                 .buttonStyle(.plain)
                 .help("Refresh")
 
-                Button {
-                    onClose()
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(Theme.textSecondary)
-                        .frame(width: 30, height: 30)
-                        .background(Circle().fill(Theme.subtle))
+                if showsClose {
+                    Button {
+                        onClose()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(Theme.textSecondary)
+                            .frame(width: 30, height: 30)
+                            .background(Circle().fill(Theme.subtle))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Close")
                 }
-                .buttonStyle(.plain)
-                .help("Close")
             }
 
             HStack(alignment: .lastTextBaseline, spacing: 28) {

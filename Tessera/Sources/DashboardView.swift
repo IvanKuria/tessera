@@ -18,8 +18,6 @@ struct DashboardView: View {
     @State private var category = "All"
     @State private var path: [EventVM] = []
     @State private var tradeTarget: TradeTarget?
-    @State private var showOnboarding = false
-    @State private var showPortfolio = false
 
     private var filtered: [EventVM] {
         category == "All" ? store.events : store.events.filter { $0.category == category }
@@ -52,16 +50,6 @@ struct DashboardView: View {
                             initialSide: target.side)
                 .frame(width: 380, height: 580)
         }
-        .sheet(isPresented: $showOnboarding) {
-            OnboardingView(account: account, onDone: { showOnboarding = false })
-                .frame(width: 470, height: 640)
-        }
-        .sheet(isPresented: $showPortfolio) {
-            PortfolioView(store: PortfolioStore(client: account.authedClient)) {
-                showPortfolio = false
-            }
-            .frame(width: 580, height: 700)
-        }
     }
 
     // MARK: Top bar
@@ -84,46 +72,8 @@ struct DashboardView: View {
                                value: store.isLoading)
             }
             .buttonStyle(.plain)
-            accountChip
         }
         .padding(.horizontal, 20).padding(.vertical, 14)
-    }
-
-    @ViewBuilder private var accountChip: some View {
-        if account.isSignedIn {
-            Menu {
-                Button("Portfolio") { showPortfolio = true }
-                Button("Refresh balance") { Task { await account.refreshAccount() } }
-                if account.env == .demo {
-                    Button("Switch to Production (real money)") { account.setEnv(.production) }
-                } else {
-                    Button("Switch to Demo") { account.setEnv(.demo) }
-                }
-                Button("Sign out", role: .destructive) { account.signOut() }
-            } label: {
-                HStack(spacing: 6) {
-                    Text(account.env == .demo ? "DEMO" : "LIVE")
-                        .font(Theme.ui(9, .bold)).tracking(0.6)
-                        .foregroundStyle(account.env == .demo ? Theme.textSecondary : Theme.no)
-                    Text(balanceText).font(Theme.num(12, .semibold)).foregroundStyle(Theme.text)
-                }
-                .padding(.horizontal, 10).padding(.vertical, 6)
-                .background(Capsule().fill(Theme.subtle))
-            }
-            .menuStyle(.borderlessButton).fixedSize()
-        } else {
-            Button { showOnboarding = true } label: {
-                Text("Connect").font(Theme.ui(12, .semibold)).foregroundStyle(Theme.onAccent)
-                    .padding(.horizontal, 14).padding(.vertical, 7)
-                    .background(Capsule().fill(Theme.yes))
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private var balanceText: String {
-        guard let cents = account.balanceCents else { return "—" }
-        return String(format: "$%.2f", Double(cents) / 100)
     }
 
     // MARK: Category tabs

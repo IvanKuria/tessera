@@ -27,12 +27,12 @@ final class PortfolioStore {
 
     // MARK: - Wiring
 
-    /// The signed REST client, shared from `AccountStore`. `nil` when signed out.
-    private let client: KalshiClient?
+    /// The account, read at load time so the store always reflects current sign-in.
+    private let account: AccountStore
 
-    /// Stores the client; performs NO networking (keep init cheap for SwiftUI).
-    init(client: KalshiClient?) {
-        self.client = client
+    /// Stores the account; performs NO networking (keep init cheap for SwiftUI).
+    init(account: AccountStore) {
+        self.account = account
     }
 
     // MARK: - Load
@@ -40,7 +40,7 @@ final class PortfolioStore {
     /// Loads every portfolio section concurrently, tolerating per-section
     /// failures. Only a balance failure sets `errorMessage`.
     func load() async {
-        guard let client else {
+        guard let client = account.authedClient else {
             errorMessage = "Connect your Kalshi API key first."
             return
         }
@@ -87,7 +87,7 @@ final class PortfolioStore {
 
     /// Cancels a resting order, then reloads the orders list.
     func cancel(orderId: String) async {
-        guard let client else { return }
+        guard let client = account.authedClient else { return }
         do {
             try await client.cancelOrder(orderId: orderId)
         } catch {
@@ -98,7 +98,7 @@ final class PortfolioStore {
 
     /// Refreshes just the open-orders section (after a cancel).
     private func reloadOrders() async {
-        guard let client else { return }
+        guard let client = account.authedClient else { return }
         let result = await Self.result {
             try await client.orders(ticker: nil, status: nil, cursor: nil).orders
         }

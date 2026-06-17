@@ -30,8 +30,8 @@ struct TesseraApp: App {
         .menuBarExtraStyle(.window)
 
         Window("Tessera", id: "main") {
-            DashboardView(store: store, account: account)
-                .frame(minWidth: 900, minHeight: 640)
+            RootView(store: store, account: account, alerts: alerts, triggers: triggers)
+                .frame(minWidth: 980, minHeight: 660)
                 // Kalshi is a light UI; pin it so it reads right under any system theme.
                 .preferredColorScheme(.light)
                 // Start the ambient + flagship engines once the UI is up.
@@ -41,24 +41,5 @@ struct TesseraApp: App {
                 }
         }
         .windowResizability(.contentMinSize)
-        .commands {
-            CommandGroup(after: .windowList) {
-                OpenAutomationCommand()
-            }
-        }
-
-        Window("Alerts & Triggers", id: "automation") {
-            AutomationView(alerts: alerts, triggers: triggers)
-        }
-        .windowResizability(.contentMinSize)
-    }
-}
-
-/// Menu command (⌥⌘A) to open the automation control panel.
-private struct OpenAutomationCommand: View {
-    @Environment(\.openWindow) private var openWindow
-    var body: some View {
-        Button("Alerts & Triggers") { openWindow(id: "automation") }
-            .keyboardShortcut("a", modifiers: [.option, .command])
     }
 }
