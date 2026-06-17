@@ -14,8 +14,24 @@ struct CandleChartView: View {
 
     @State private var showVolume = true
     @State private var showSpread = true
+    @State private var showMA = true
     @State private var logScale = false
     @State private var selectedID: Int?
+
+    /// Simple moving average period, scaled to the candle count.
+    private var maPeriod: Int { max(3, min(12, candles.count / 4)) }
+
+    /// SMA of closes, one point per candle once the window fills.
+    private var movingAverage: [(id: Int, value: Double)] {
+        guard candles.count >= maPeriod else { return [] }
+        let closes = candles.map(\.close)
+        var out: [(Int, Double)] = []
+        for i in (maPeriod - 1)..<candles.count {
+            let avg = closes[(i - maPeriod + 1)...i].reduce(0, +) / Double(maPeriod)
+            out.append((candles[i].id, avg))
+        }
+        return out
+    }
 
     // MARK: - Derived (precomputed, never per-mark)
 
@@ -93,7 +109,29 @@ struct CandleChartView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             controlRow
+            if hasData { priceReadout }
             chartArea
+        }
+    }
+
+    /// Current price + change over the visible window.
+    private var priceReadout: some View {
+        let current = candles.last?.close ?? 0
+        let base = candles.first?.open ?? current
+        let change = current - base
+        let pct = base > 0 ? change / base * 100 : 0
+        let up = change >= 0
+        return HStack(alignment: .firstTextBaseline, spacing: 9) {
+            Text("\(Int(current.rounded()))¢")
+                .font(Theme.num(26, .semibold)).foregroundStyle(Theme.text)
+            HStack(spacing: 4) {
+                Image(systemName: up ? "arrow.up.right" : "arrow.down.right")
+                    .font(.system(size: 11, weight: .bold))
+                Text("\(changeString(change)) (\(up ? "+" : "−")\(String(format: "%.1f", abs(pct)))%)")
+            }
+            .font(Theme.num(13, .semibold)).foregroundStyle(up ? Theme.yes : Theme.no)
+            Text("· \(timeframe.rawValue)").font(Theme.ui(12)).foregroundStyle(Theme.textTertiary)
+            Spacer()
         }
     }
 
@@ -122,6 +160,7 @@ struct CandleChartView: View {
 
     private var controlRow: some View {
         HStack(spacing: 8) {
+            chip("MA", isOn: showMA) { showMA.toggle() }
             chip("Vol", isOn: showVolume) { showVolume.toggle() }
             chip("Spread", isOn: showSpread) { showSpread.toggle() }
             chip("Log", isOn: logScale) { logScale.toggle() }
@@ -208,6 +247,29 @@ struct CandleChartView: View {
                 .foregroundStyle(color)
             }
 
+            // Moving-average trend line over the candle closes (amber).
+            if showMA {
+                ForEach(movingAverage, id: \.id) { p in
+                    LineMark(x: .value("Bar", p.id), y: .value("MA", p.value),
+                             series: .value("series", "ma"))
+                        .foregroundStyle(Color(hex: 0xF59F00))
+                        .lineStyle(StrokeStyle(lineWidth: 1.6))
+                        .interpolationMethod(.monotone)
+                }
+            }
+
+            // Always-on last-price line + tag at the latest close.
+            if let last = candles.last {
+                let up = (candles.first.map { last.close >= $0.open } ?? true)
+                RuleMark(y: .value("Last", last.close))
+                    .foregroundStyle((up ? Theme.yes : Theme.no).opacity(0.45))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
+                    .annotation(position: .trailing, alignment: .center, spacing: 0) {
+                        priceTag("\(Int(last.close.rounded()))¢", fill: up ? Theme.yes : Theme.no)
+                    }
+            }
+
+            // Hover crosshair: vertical rule + OHLC tooltip, plus a price tag on the axis.
             if let sel = selectedID, let c = byID[sel] {
                 RuleMark(x: .value("Bar", sel))
                     .foregroundStyle(Theme.textTertiary.opacity(0.5))
@@ -217,6 +279,12 @@ struct CandleChartView: View {
                         overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
                     ) {
                         tooltip(c)
+                    }
+                RuleMark(y: .value("Hover", c.close))
+                    .foregroundStyle(Theme.textTertiary.opacity(0.35))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                    .annotation(position: .trailing, alignment: .center, spacing: 0) {
+                        priceTag("\(Int(c.close.rounded()))¢", fill: Theme.text)
                     }
             }
         }
@@ -313,6 +381,15 @@ struct CandleChartView: View {
         .background(RoundedRectangle(cornerRadius: 8).fill(Theme.surface)
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.border, lineWidth: 1)))
         .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
+    }
+
+    /// A small colored axis price tag (last-price / crosshair).
+    private func priceTag(_ text: String, fill: Color) -> some View {
+        Text(text)
+            .font(Theme.num(9.5, .semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 5).padding(.vertical, 2)
+            .background(Capsule().fill(fill))
     }
 
     private func ohlc(_ label: String, _ value: Double) -> some View {
