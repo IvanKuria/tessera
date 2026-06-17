@@ -61,7 +61,8 @@ struct EventCardView: View {
                     OutcomeAvatar(
                         name: outcome.label,
                         ring: Color(hex: DetailStore.linePalette[index % DetailStore.linePalette.count]),
-                        size: 30
+                        size: 30,
+                        peopleLikely: CategoryStyle.hasPeopleOutcomes(event.category)
                     )
                     Text(outcome.label)
                         .font(Theme.ui(14.5, .medium)).foregroundStyle(Theme.text)

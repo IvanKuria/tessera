@@ -24,8 +24,20 @@ struct CategoryStyle {
         case c.contains("world"):               return .init(symbol: "globe.americas.fill", color: Color(hex: 0x1098AD))
         case c.contains("commodit"):            return .init(symbol: "drop.fill", color: Color(hex: 0xF59F00))
         case c.contains("media"):               return .init(symbol: "play.rectangle.fill", color: Color(hex: 0xE8590C))
+        case c.contains("social"):              return .init(symbol: "bubble.left.and.bubble.right.fill", color: Color(hex: 0x9C36B5))
+        case c.contains("transport"):           return .init(symbol: "airplane", color: Color(hex: 0x1971C2))
+        case c.contains("energy"), c.contains("oil"): return .init(symbol: "fuelpump.fill", color: Color(hex: 0xF08C00))
         default:                                return .init(symbol: "chart.bar.fill", color: Color(hex: 0x868E96))
         }
+    }
+
+    /// Categories whose outcomes are typically people / orgs (so portrait lookups
+    /// are worthwhile); others (sports, commodities, weather…) use initials/icons.
+    static func hasPeopleOutcomes(_ category: String) -> Bool {
+        let c = category.lowercased()
+        return ["politic", "election", "entertain", "culture",
+                "mention", "world", "compan", "media", "tech", "science"]
+            .contains { c.contains($0) }
     }
 }
 

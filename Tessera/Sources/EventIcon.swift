@@ -35,11 +35,8 @@ struct EventIcon: View {
     /// The leading outcome's name — only for categories whose outcomes are people
     /// / orgs (so we don't mis-resolve sports lines or numeric thresholds).
     private var leaderName: String? {
-        guard !event.isBinary, let leader = event.topOutcome else { return nil }
-        let category = event.category.lowercased()
-        let peopleLikely = ["politic", "election", "entertain", "culture",
-                            "mention", "world", "compan", "media", "tech", "science"]
-        guard peopleLikely.contains(where: { category.contains($0) }) else { return nil }
+        guard !event.isBinary, let leader = event.topOutcome,
+              CategoryStyle.hasPeopleOutcomes(event.category) else { return nil }
         return leader.label
     }
 }

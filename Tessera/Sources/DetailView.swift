@@ -156,7 +156,8 @@ struct DetailView: View {
                 select(outcome.id)
             } label: {
                 HStack(spacing: 13) {
-                    OutcomeAvatar(name: outcome.label, ring: dot ?? Theme.textTertiary, size: 44)
+                    OutcomeAvatar(name: outcome.label, ring: dot ?? Theme.textTertiary, size: 44,
+                                  peopleLikely: CategoryStyle.hasPeopleOutcomes(event.category))
                     Text(outcome.label)
                         .font(Theme.ui(15.5, isSelected ? .semibold : .medium))
                         .foregroundStyle(Theme.text)
