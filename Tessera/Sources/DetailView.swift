@@ -53,8 +53,8 @@ struct DetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center, spacing: 14) {
-                EventIcon(event: event, size: 46)
+            HStack(alignment: .center, spacing: 16) {
+                EventIcon(event: event, size: 58)
                 VStack(alignment: .leading, spacing: 6) {
                     Eyebrow(text: event.category)
                     Text(event.title)
@@ -155,29 +155,29 @@ struct DetailView: View {
             Button {
                 select(outcome.id)
             } label: {
-                HStack(spacing: 11) {
-                    OutcomeAvatar(name: outcome.label, ring: dot ?? Theme.textTertiary, size: 32)
+                HStack(spacing: 13) {
+                    OutcomeAvatar(name: outcome.label, ring: dot ?? Theme.textTertiary, size: 44)
                     Text(outcome.label)
-                        .font(Theme.ui(14, isSelected ? .semibold : .regular))
+                        .font(Theme.ui(15.5, isSelected ? .semibold : .medium))
                         .foregroundStyle(Theme.text)
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     Text(outcome.percent.map { "\($0)%" } ?? "—")
-                        .font(Theme.num(15, .semibold))
+                        .font(Theme.num(18, .semibold))
                         .foregroundStyle(Theme.text)
-                        .frame(width: 52, alignment: .trailing)
+                        .frame(width: 60, alignment: .trailing)
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             QuickBuyButton(side: .yes, cents: outcome.yesCents) { onBuy(outcome.id, .yes) }
-                .frame(width: 86)
+                .frame(width: 96)
             QuickBuyButton(side: .no, cents: outcome.noCents) { onBuy(outcome.id, .no) }
-                .frame(width: 86)
+                .frame(width: 96)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 11)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
         .background(isSelected ? Theme.subtle : Color.clear)
     }
 
