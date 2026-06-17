@@ -1,5 +1,7 @@
 # Naming & branding
 
+> **Chosen app name: Tessera** (decided 2026-06-17) — tagline *"Tessera — an unofficial app for Kalshi."* The SDK keeps the descriptive name **KalshiKit**.
+
 This project must be branded so it is clearly **unofficial** and **not affiliated** with Kalshi. The guiding principle is **nominative fair use**.
 
 ## Nominative fair use (the rule we follow)

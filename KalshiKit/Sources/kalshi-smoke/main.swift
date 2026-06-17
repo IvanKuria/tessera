@@ -203,6 +203,43 @@ if CommandLine.arguments.contains("--live") {
         // Network may be unavailable; report but do not fail the smoke run.
         print("  ⚠︎ live calls skipped/failed (network?): \(error)")
     }
+
+    // The market-data WebSocket requires a SIGNED handshake (verified: keyless
+    // upgrade → HTTP 401 token_authentication_failure). Without credentials we
+    // can only assert the client cleanly surfaces the auth rejection rather than
+    // hanging. With a real signer, the same flow would stream live ticks.
+    print("\nLive WebSocket (production, keyless — expects auth rejection):")
+    let socket = KalshiSocket(environment: .production)
+    let stream = await socket.events()
+    await socket.connect()
+    if let ticker = try? await client.markets(status: "open", limit: 1).markets.first?.ticker {
+        await socket.subscribe(to: [.ticker, .orderbookDelta], markets: [ticker])
+        print("    subscribed to \(ticker)")
+    }
+    let timeout = Task { try? await Task.sleep(for: .seconds(10)); await socket.disconnect() }
+    var got: [String] = []
+    for await event in stream {
+        switch event {
+        case .connected: got.append("connected")
+        case .subscribed: got.append("subscribed")
+        case .ticker: got.append("ticker")
+        case .orderbook: got.append("orderbook")
+        case .trade: got.append("trade")
+        case .serverError: got.append("serverError")
+        case .disconnected: got.append("disconnected")
+        case .unknown(let t): got.append("unknown(\(t))")
+        }
+        // Keyless: we expect a disconnect (401), not data. Stop once we see the
+        // connection result so the smoke run stays fast.
+        if got.contains("disconnected") || got.filter({ $0 != "connected" }).count >= 3 { break }
+    }
+    timeout.cancel()
+    await socket.disconnect()
+    // Correct behavior keyless = surfaces a disconnect and does NOT falsely report connected.
+    check("WebSocket surfaces auth rejection (no false 'connected')",
+          got.contains { $0 == "disconnected" || $0 == "serverError" } && !got.contains("connected"))
+    print("    events: \(got.isEmpty ? "(none)" : got.joined(separator: ", "))")
+    print("    note: real-time data needs a signed handshake (user API key); REST polling is the keyless fallback.")
 }
 
 print("\n\(failures == 0 ? "ALL PASSED ✅" : "\(failures) FAILED ❌")")
