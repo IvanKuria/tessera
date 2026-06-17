@@ -46,24 +46,24 @@ struct PriceChartView: View {
     private var hasData: Bool { series.contains { $0.points.count >= 2 } }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             if showLegend { legend }
-            chartArea.frame(height: 240)
+            chartArea.frame(height: 340)
             selector
         }
     }
 
     private var legend: some View {
-        HStack(spacing: 14) {
+        FlowLayout(spacing: 16, lineSpacing: 9) {
             ForEach(series) { line in
                 Button { onSelectSeries(line.id) } label: {
-                    HStack(spacing: 6) {
-                        Circle().fill(line.color).frame(width: 8, height: 8)
+                    HStack(spacing: 7) {
+                        Circle().fill(line.color).frame(width: 10, height: 10)
                         Text(line.label)
-                            .font(Theme.ui(12, highlightedID == line.id ? .semibold : .medium))
+                            .font(Theme.ui(13, highlightedID == line.id ? .semibold : .medium))
                             .foregroundStyle(Theme.text).lineLimit(1)
                         if let p = line.lastPercent {
-                            Text("\(Int(p.rounded()))%").font(Theme.num(12, .semibold)).foregroundStyle(Theme.textSecondary)
+                            Text("\(Int(p.rounded()))%").font(Theme.num(13, .semibold)).foregroundStyle(Theme.textSecondary)
                         }
                     }
                     .opacity(legendOpacity(line))
@@ -71,7 +71,6 @@ struct PriceChartView: View {
                 }
                 .buttonStyle(.plain)
             }
-            Spacer(minLength: 0)
         }
     }
 
