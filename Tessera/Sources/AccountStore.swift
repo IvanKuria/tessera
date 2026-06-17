@@ -217,7 +217,9 @@ final class AccountStore {
                 type: "limit",
                 yesPrice: side == .yes ? clamped : nil,
                 noPrice: side == .no ? clamped : nil,
-                timeInForce: .goodTillCanceled,
+                // Omit time_in_force → a resting limit (GTC) by default; sending an
+                // unexpected TIF value can be rejected as "invalid order".
+                timeInForce: nil,
                 clientOrderId: UUID().uuidString,
                 buyMaxCost: nil
             )
@@ -262,15 +264,22 @@ final class AccountStore {
     }
 
     private func readable(_ error: Error) -> String {
-        // A 401 almost always means the selected environment doesn't match where
-        // the key was created — surface that explicitly.
-        if case let KalshiError.http(status, message, _) = error, status == 401 {
-            return """
-            Authentication failed (401) on \(env.badge). Make sure the selected \
-            environment matches where you created your API key: kalshi.com keys \
-            are Production; demo.kalshi.co keys are Demo. Use the account menu to \
-            switch environments. (\(message ?? "token authentication failure"))
-            """
+        if case let KalshiError.http(status, message, body) = error {
+            // A 401 almost always means the env doesn't match where the key was made.
+            if status == 401 {
+                return """
+                Authentication failed (401) on \(env.badge). Make sure the selected \
+                environment matches where you created your API key: kalshi.com keys \
+                are Production; demo.kalshi.co keys are Demo. Use the account menu to \
+                switch environments. (\(message ?? "token authentication failure"))
+                """
+            }
+            // Surface Kalshi's full error body so the real reason is visible.
+            let detail = body
+                .flatMap { String(data: $0, encoding: .utf8) }?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let snippet = (detail?.isEmpty == false) ? " — \(detail!.prefix(400))" : ""
+            return "Request failed (HTTP \(status))\(message.map { ": \($0)" } ?? "")\(snippet)"
         }
         return (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
     }
