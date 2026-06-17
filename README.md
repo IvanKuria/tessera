@@ -2,6 +2,8 @@
 
 <div align="center">
 
+<img src="docs/logo.png" alt="Tessera logo" width="128" height="128" />
+
 # Tessera + KalshiKit
 
 **A native macOS app and a reusable Swift SDK for [Kalshi](https://kalshi.com), the CFTC-regulated prediction market.**
@@ -14,8 +16,6 @@ Browse live markets and implied odds, drill into price history and order books, 
 ![Status: WIP](https://img.shields.io/badge/status-early%20WIP-yellow.svg)
 
 </div>
-
-![Tessera — markets dashboard](docs/screenshots/dashboard.png)
 
 > **Unofficial.** Not financial advice. Read-only by default; trading is strictly opt-in and uses **your own** Kalshi API key, stored only in the macOS Keychain.
 
