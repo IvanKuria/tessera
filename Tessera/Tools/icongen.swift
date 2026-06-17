@@ -2,20 +2,22 @@ import AppKit
 import CoreGraphics
 import Foundation
 
-// Tessera app icon generator. Renders the mark at native pixel sizes (crisp at
-// every scale) and writes PNGs into an AppIcon.appiconset.
-//
-// Concept: a mint→forest squircle (Kalshi palette, original composition) with
-// three ascending white tiles (rising odds) and a detached "tessera" tile above
-// the leader, over a faint mosaic grid. Run: swift icongen.swift <outputDir>
+// Tessera app icon generator. A monogram "T" built from mosaic tiles (tesserae),
+// glowing mint on a deep green-black field, with one detached "live" tile.
+// Run: swift icongen.swift <outputDir>
 
-func color(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat, _ a: CGFloat = 1) -> CGColor {
+func rgb(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat, _ a: CGFloat = 1) -> CGColor {
     NSColor(srgbRed: r, green: g, blue: b, alpha: a).cgColor
 }
+func lerp(_ a: CGFloat, _ b: CGFloat, _ t: CGFloat) -> CGFloat { a + (b - a) * t }
 
-let mint   = color(0.16, 0.91, 0.66)   // #29E8A8
-let midGrn = color(0.04, 0.55, 0.42)
-let forest = color(0.00, 0.18, 0.12)   // #002E1F
+// Mint gradient across the T (brighter at the top of the letter).
+func tileColor(_ t: CGFloat) -> CGColor {
+    rgb(lerp(0.42, 0.09, t), lerp(0.97, 0.78, t), lerp(0.80, 0.58, t))
+}
+let bgTop = rgb(0.05, 0.20, 0.15)   // deep teal-green
+let bgBot = rgb(0.02, 0.07, 0.05)   // near-black green
+let mintBright = rgb(0.55, 0.99, 0.84)
 
 func makeIcon(_ size: CGFloat) -> CGImage {
     let cs = CGColorSpaceCreateDeviceRGB()
@@ -25,33 +27,24 @@ func makeIcon(_ size: CGFloat) -> CGImage {
     ctx.setShouldAntialias(true)
     ctx.interpolationQuality = .high
 
-    // macOS icon grid: rounded rect inset with padding, ~22.5% corner radius.
     let pad = size * 0.094
     let rect = CGRect(x: pad, y: pad, width: size - 2 * pad, height: size - 2 * pad)
     let corner = rect.width * 0.225
     let squircle = CGPath(roundedRect: rect, cornerWidth: corner, cornerHeight: corner, transform: nil)
 
-    // Soft drop shadow beneath the tile.
+    // Drop shadow under the tile.
     ctx.saveGState()
-    ctx.setShadow(offset: CGSize(width: 0, height: -size * 0.012),
-                  blur: size * 0.03, color: color(0, 0, 0, 0.28))
-    ctx.addPath(squircle); ctx.setFillColor(forest); ctx.fillPath()
+    ctx.setShadow(offset: CGSize(width: 0, height: -size * 0.012), blur: size * 0.03, color: rgb(0, 0, 0, 0.30))
+    ctx.addPath(squircle); ctx.setFillColor(bgBot); ctx.fillPath()
     ctx.restoreGState()
 
-    // Gradient fill (CG is bottom-up: bottom=forest, top=mint).
+    // Background gradient + faint mosaic grid + top sheen.
     ctx.saveGState()
     ctx.addPath(squircle); ctx.clip()
-    let grad = CGGradient(colorsSpace: cs,
-                          colors: [forest, midGrn, mint] as CFArray,
-                          locations: [0.0, 0.55, 1.0])!
-    ctx.drawLinearGradient(grad, start: CGPoint(x: rect.midX, y: rect.minY),
-                           end: CGPoint(x: rect.midX, y: rect.maxY), options: [])
-
-    // Faint mosaic grid (the "tessera" identity).
-    ctx.setStrokeColor(color(1, 1, 1, 0.05))
-    ctx.setLineWidth(max(1, size * 0.004))
-    let cells = 6
-    let step = rect.width / CGFloat(cells)
+    let bg = CGGradient(colorsSpace: cs, colors: [bgBot, bgTop] as CFArray, locations: [0, 1])!
+    ctx.drawLinearGradient(bg, start: CGPoint(x: rect.midX, y: rect.minY), end: CGPoint(x: rect.midX, y: rect.maxY), options: [])
+    ctx.setStrokeColor(rgb(1, 1, 1, 0.045)); ctx.setLineWidth(max(1, size * 0.004))
+    let cells = 6, step = rect.width / CGFloat(cells)
     for i in 1..<cells {
         let x = rect.minX + CGFloat(i) * step
         ctx.move(to: CGPoint(x: x, y: rect.minY)); ctx.addLine(to: CGPoint(x: x, y: rect.maxY))
@@ -59,61 +52,56 @@ func makeIcon(_ size: CGFloat) -> CGImage {
         ctx.move(to: CGPoint(x: rect.minX, y: y)); ctx.addLine(to: CGPoint(x: rect.maxX, y: y))
     }
     ctx.strokePath()
-
-    // Top sheen.
-    let sheen = CGGradient(colorsSpace: cs, colors: [color(1,1,1,0.14), color(1,1,1,0)] as CFArray, locations: [0,1])!
-    ctx.drawLinearGradient(sheen, start: CGPoint(x: rect.midX, y: rect.maxY),
-                           end: CGPoint(x: rect.midX, y: rect.midY), options: [])
+    let sheen = CGGradient(colorsSpace: cs, colors: [rgb(1,1,1,0.10), rgb(1,1,1,0)] as CFArray, locations: [0,1])!
+    ctx.drawLinearGradient(sheen, start: CGPoint(x: rect.midX, y: rect.maxY), end: CGPoint(x: rect.midX, y: rect.midY), options: [])
     ctx.restoreGState()
 
-    // Ascending tiles. Content area inset within the squircle.
-    let ax = rect.minX + rect.width * 0.24
-    let ay = rect.minY + rect.height * 0.26
-    let aw = rect.width * 0.52
-    let ah = rect.height * 0.46
-    let area = CGRect(x: ax, y: ay, width: aw, height: ah)
+    // Mosaic "T": crossbar of 3 tiles + a 3-tile stem.
+    let tile = rect.width * 0.205
+    let gap = tile * 0.20
+    let totalW = 3 * tile + 2 * gap
+    let totalH = 4 * tile + 3 * gap
+    let originX = rect.minX + (rect.width - totalW) / 2
+    let originYTop = rect.minY + (rect.height - totalH) / 2 - rect.height * 0.01
 
-    let n = 3
-    let gap = area.width * 0.13
-    let barW = (area.width - gap * CGFloat(n - 1)) / CGFloat(n)
-    let heights: [CGFloat] = [0.46, 0.70, 1.0]
-    func tile(_ r: CGRect, _ fill: CGColor, radiusFrac: CGFloat = 0.30) {
-        let rad = min(r.width, r.height) * radiusFrac
+    // (col,row) in top-left logical coords; row 0 is the top of the letter.
+    func frame(_ col: CGFloat, _ row: CGFloat, inset: CGFloat = 0) -> CGRect {
+        let x = originX + col * (tile + gap) + inset
+        let yTop = originYTop + row * (tile + gap) + inset
+        return CGRect(x: x, y: size - yTop - (tile - 2 * inset), width: tile - 2 * inset, height: tile - 2 * inset)
+    }
+    func drawTile(_ r: CGRect, _ fill: CGColor, glow: Bool = true) {
+        ctx.saveGState()
+        if glow { ctx.setShadow(offset: .zero, blur: size * 0.035, color: rgb(0.16, 0.91, 0.66, 0.55)) }
+        let rad = r.width * 0.26
         ctx.addPath(CGPath(roundedRect: r, cornerWidth: rad, cornerHeight: rad, transform: nil))
         ctx.setFillColor(fill); ctx.fillPath()
-    }
-    for i in 0..<n {
-        let h = area.height * heights[i]
-        let x = area.minX + CGFloat(i) * (barW + gap)
-        tile(CGRect(x: x, y: area.minY, width: barW, height: h),
-             color(1, 1, 1, i == n - 1 ? 1.0 : 0.82))
+        ctx.restoreGState()
     }
 
-    // Detached "tessera" tile above the leader (the latest data point).
-    let t = barW * 0.92
-    let tx = area.minX + 2 * (barW + gap) + (barW - t) / 2
-    let ty = area.minY + area.height * 1.0 + gap * 0.55
-    tile(CGRect(x: tx, y: ty, width: t, height: t), mint, radiusFrac: 0.28)
-    // thin white ring so the mint tile reads on the mint upper gradient
-    let ring = barW * 0.92
-    let rrad = ring * 0.28
-    ctx.addPath(CGPath(roundedRect: CGRect(x: tx, y: ty, width: ring, height: ring),
-                       cornerWidth: rrad, cornerHeight: rrad, transform: nil))
-    ctx.setStrokeColor(color(1, 1, 1, 0.85)); ctx.setLineWidth(size * 0.012); ctx.strokePath()
+    // Crossbar (skip top-right — drawn detached) + stem, tinted top→bottom.
+    let solid: [(CGFloat, CGFloat, CGFloat)] = [(0,0,0.0), (1,0,0.0), (1,1,0.33), (1,2,0.66), (1,3,1.0)]
+    for (c, r, t) in solid { drawTile(frame(c, r), tileColor(t)) }
+
+    // The "live" tessera: top-right crossbar tile, brighter with a ring and a
+    // subtle nudge (keeps the T intact while marking the leading tile).
+    let live = frame(2, 0).offsetBy(dx: gap * 0.14, dy: gap * 0.30)
+    drawTile(live, mintBright)
+    let rad = live.width * 0.26
+    ctx.addPath(CGPath(roundedRect: live, cornerWidth: rad, cornerHeight: rad, transform: nil))
+    ctx.setStrokeColor(rgb(1, 1, 1, 0.9)); ctx.setLineWidth(size * 0.011); ctx.strokePath()
 
     return ctx.makeImage()!
 }
 
 func writePNG(_ image: CGImage, to url: URL) {
     let rep = NSBitmapImageRep(cgImage: image)
-    let data = rep.representation(using: .png, properties: [:])!
-    try! data.write(to: url)
+    try! rep.representation(using: .png, properties: [:])!.write(to: url)
 }
 
 let outDir = URL(fileURLWithPath: CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : ".")
 try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 for px in [16, 32, 64, 128, 256, 512, 1024] {
-    let img = makeIcon(CGFloat(px))
-    writePNG(img, to: outDir.appendingPathComponent("icon_\(px).png"))
+    writePNG(makeIcon(CGFloat(px)), to: outDir.appendingPathComponent("icon_\(px).png"))
     print("wrote icon_\(px).png")
 }
