@@ -28,6 +28,19 @@ final class DetailStore {
             case .all: return (now - 31_536_000, 1_440) // ~365 daily candles
             }
         }
+
+        /// Candle window: fetch a finer native interval, then aggregate to
+        /// `bucketMinutes` for a denser candlestick chart (~60–180 bars) than the
+        /// line chart needs. Independent of `window(now:)` so the line path is untouched.
+        func candleWindow(now: Int) -> (startTs: Int, periodInterval: Int, bucketMinutes: Int) {
+            switch self {
+            case .h1:  return (now - 3_600, 1, 1)            // 60 × 1-min
+            case .d1:  return (now - 86_400, 1, 15)          // 1440 × 1-min → 15-min ≈ 96
+            case .w1:  return (now - 604_800, 60, 120)       // 168 × hourly → 2h ≈ 84
+            case .m1:  return (now - 2_592_000, 60, 240)     // 720 × hourly → 4h ≈ 180
+            case .all: return (now - 31_536_000, 1_440, 1_440) // daily passthrough
+            }
+        }
     }
 
     /// One charted sample with a stable identity (index), so SwiftUI reuses marks.
@@ -56,6 +69,8 @@ final class DetailStore {
 
     private(set) var market: Market?
     private(set) var chartSeries: [SeriesLine] = []
+    /// Candlestick bars for the focused single market (candle chart mode).
+    private(set) var focusedCandles: [CandleVM] = []
     private(set) var orderbook: Orderbook?
     private(set) var trades: [Trade] = []
 
@@ -83,7 +98,8 @@ final class DetailStore {
         errorMessage = nil
         async let detail: Void = loadFocusedDetail(marketTicker: focusedMarketTicker)
         async let chart: Void = loadChartSeries()
-        _ = await (detail, chart)
+        async let candles: Void = loadFocusedCandles()
+        _ = await (detail, chart, candles)
         isLoading = false
     }
 
@@ -92,8 +108,60 @@ final class DetailStore {
         guard marketTicker != focusedMarketTicker, !marketTicker.isEmpty else { return }
         focusedMarketTicker = marketTicker
         liveLastCents = nil; liveYesAskCents = nil; liveNoAskCents = nil
-        await loadFocusedDetail(marketTicker: marketTicker)
+        async let detail: Void = loadFocusedDetail(marketTicker: marketTicker)
+        async let candles: Void = loadFocusedCandles()
+        _ = await (detail, candles)
         if let socket { await socket.subscribe(to: [.ticker, .trade], markets: [marketTicker]) }
+    }
+
+    /// Fetches + aggregates candlesticks for the focused market into chart bars.
+    func loadFocusedCandles() async {
+        guard !focusedMarketTicker.isEmpty, !seriesTicker.isEmpty else { focusedCandles = []; return }
+        let now = Int(Date().timeIntervalSince1970)
+        let (startTs, periodInterval, bucketMinutes) = timeframe.candleWindow(now: now)
+        let client = self.client
+        let series = seriesTicker
+        let ticker = focusedMarketTicker
+        let raw = (try? await client.candlesticks(
+            seriesTicker: series, ticker: ticker,
+            startTs: startTs, endTs: now, periodInterval: periodInterval
+        )) ?? []
+        focusedCandles = Self.prepareCandles(raw, bucketMinutes: bucketMinutes)
+    }
+
+    /// Aggregates raw candles (reusing the SDK's tested bucketer) and maps to
+    /// chart-ready `CandleVM`s in cents, carrying the last close through no-trade gaps.
+    nonisolated static func prepareCandles(_ raw: [Candlestick], bucketMinutes: Int) -> [CandleVM] {
+        let aggregated = CandleAggregation.aggregate(raw, bucketMinutes: bucketMinutes)
+            .sorted { ($0.endPeriodTs ?? 0) < ($1.endPeriodTs ?? 0) }
+
+        func cents(_ value: KalshiDecimal?) -> Double? {
+            value.map { NSDecimalNumber(decimal: $0.value * 100).doubleValue }
+        }
+
+        var result: [CandleVM] = []
+        var lastClose: Double?
+        for candle in aggregated {
+            guard let ts = candle.endPeriodTs else { continue }
+            let date = Date(timeIntervalSince1970: TimeInterval(ts))
+            let bid = cents(candle.yesBid?.closeDollars)
+            let ask = cents(candle.yesAsk?.closeDollars)
+            let mid: Double? = (bid != nil && ask != nil) ? (bid! + ask!) / 2 : (bid ?? ask)
+
+            // Trade OHLC if there were trades; else carry forward the last close
+            // (flat doji) or fall back to the bid/ask mid for the very first bar.
+            guard let close = cents(candle.price?.closeDollars) ?? lastClose ?? mid else { continue }
+            let open = cents(candle.price?.openDollars) ?? lastClose ?? close
+            let high = cents(candle.price?.highDollars) ?? max(open, close)
+            let low = cents(candle.price?.lowDollars) ?? min(open, close)
+            let volume = candle.volumeFp?.doubleValue ?? 0
+
+            result.append(CandleVM(id: result.count, date: date,
+                                   open: open, high: high, low: low, close: close,
+                                   volume: volume, yesBid: bid, yesAsk: ask))
+            lastClose = close
+        }
+        return result
     }
 
     // MARK: - Live WebSocket feed

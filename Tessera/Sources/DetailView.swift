@@ -11,6 +11,7 @@ struct DetailView: View {
 
     @State private var store = DetailStore()
     @State private var selectedOutcomeID: String?
+    @State private var chartMode: ChartMode = .line
 
     var body: some View {
         ScrollView {
@@ -34,7 +35,7 @@ struct DetailView: View {
         }
         .onDisappear { store.stopLive() }
         .onChange(of: store.timeframe) { _, _ in
-            Task { await store.loadChartSeries() }
+            Task { await store.loadChartSeries(); await store.loadFocusedCandles() }
         }
     }
 
@@ -43,6 +44,7 @@ struct DetailView: View {
     private func select(_ id: String) {
         if selectedOutcomeID == id {
             selectedOutcomeID = nil
+            chartMode = .line          // candles need a single focused market
         } else {
             selectedOutcomeID = id
             Task { await store.focus(marketTicker: id) }
@@ -184,16 +186,53 @@ struct DetailView: View {
 
     // MARK: - Shared pieces
 
+    /// Candles need a single focused market: binary always, multi-outcome only
+    /// after an outcome is selected.
+    private var canShowCandles: Bool { event.isBinary || selectedOutcomeID != nil }
+
     private var chart: some View {
         // Timeframe changes are observed by `.onChange(of: store.timeframe)`, which
-        // refetches candles — so the selector only needs to mutate the binding.
-        PriceChartView(
-            series: store.chartSeries,
-            isLoading: store.isLoading,
-            timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 }),
-            highlightedID: selectedOutcomeID,
-            onSelectSeries: { select($0) }
-        )
+        // refetches both the line series and candles.
+        VStack(alignment: .leading, spacing: 10) {
+            if canShowCandles { chartModeToggle }
+
+            if chartMode == .candles && canShowCandles {
+                CandleChartView(
+                    candles: store.focusedCandles,
+                    isLoading: store.isLoading,
+                    timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 }),
+                    onTimeframeChange: { Task { await store.loadFocusedCandles() } }
+                )
+            } else {
+                PriceChartView(
+                    series: store.chartSeries,
+                    isLoading: store.isLoading,
+                    timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 }),
+                    highlightedID: selectedOutcomeID,
+                    onSelectSeries: { select($0) }
+                )
+            }
+        }
+    }
+
+    private var chartModeToggle: some View {
+        HStack(spacing: 0) {
+            chartModeButton("Line", .line)
+            chartModeButton("Candles", .candles)
+        }
+        .padding(2)
+        .background(RoundedRectangle(cornerRadius: 9).fill(Theme.subtle))
+    }
+
+    private func chartModeButton(_ title: String, _ mode: ChartMode) -> some View {
+        Button { withAnimation(.easeOut(duration: 0.15)) { chartMode = mode } } label: {
+            Text(title)
+                .font(Theme.ui(12, chartMode == mode ? .semibold : .regular))
+                .foregroundStyle(chartMode == mode ? Theme.text : Theme.textSecondary)
+                .padding(.horizontal, 14).padding(.vertical, 5)
+                .background(RoundedRectangle(cornerRadius: 7).fill(chartMode == mode ? Theme.surface : Color.clear))
+        }
+        .buttonStyle(.plain)
     }
 
     private func buyRow(marketTicker: String, yesCents: Int?, noCents: Int?) -> some View {
