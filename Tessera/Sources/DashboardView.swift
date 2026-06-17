@@ -19,6 +19,7 @@ struct DashboardView: View {
     @State private var path: [EventVM] = []
     @State private var tradeTarget: TradeTarget?
     @State private var showOnboarding = false
+    @State private var showPortfolio = false
 
     private var filtered: [EventVM] {
         category == "All" ? store.events : store.events.filter { $0.category == category }
@@ -37,7 +38,7 @@ struct DashboardView: View {
                 }
             }
             .navigationDestination(for: EventVM.self) { event in
-                DetailView(event: event, onBuy: { ticker, side in
+                DetailView(event: event, account: account, onBuy: { ticker, side in
                     tradeTarget = TradeTarget(marketTicker: ticker, eventTitle: event.title, side: side)
                 })
                 .background(Theme.bg)
@@ -54,6 +55,12 @@ struct DashboardView: View {
         .sheet(isPresented: $showOnboarding) {
             OnboardingView(account: account, onDone: { showOnboarding = false })
                 .frame(width: 470, height: 640)
+        }
+        .sheet(isPresented: $showPortfolio) {
+            PortfolioView(store: PortfolioStore(client: account.authedClient)) {
+                showPortfolio = false
+            }
+            .frame(width: 580, height: 700)
         }
     }
 
@@ -85,6 +92,7 @@ struct DashboardView: View {
     @ViewBuilder private var accountChip: some View {
         if account.isSignedIn {
             Menu {
+                Button("Portfolio") { showPortfolio = true }
                 Button("Refresh balance") { Task { await account.refreshAccount() } }
                 Button("Sign out", role: .destructive) { account.signOut() }
             } label: {

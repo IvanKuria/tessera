@@ -63,7 +63,16 @@ final class DetailStore {
     private(set) var isLoading = false
     private(set) var errorMessage: String?
 
+    // Live feed (WebSocket) — populated when signed in; views prefer these.
+    private(set) var isLive = false
+    private(set) var liveLastCents: Int?
+    private(set) var liveYesAskCents: Int?
+    private(set) var liveNoAskCents: Int?
+
     private let client = KalshiClient(environment: .production)
+    private var socket: KalshiSocket?
+    private var liveTask: Task<Void, Never>?
+    private var lastBookRefresh = Date(timeIntervalSince1970: 0)
 
     /// Initial load: focused-market detail + the chart series, concurrently.
     func load(event: EventVM) async {
@@ -82,7 +91,94 @@ final class DetailStore {
     func focus(marketTicker: String) async {
         guard marketTicker != focusedMarketTicker, !marketTicker.isEmpty else { return }
         focusedMarketTicker = marketTicker
+        liveLastCents = nil; liveYesAskCents = nil; liveNoAskCents = nil
         await loadFocusedDetail(marketTicker: marketTicker)
+        if let socket { await socket.subscribe(to: [.ticker, .trade], markets: [marketTicker]) }
+    }
+
+    // MARK: - Live WebSocket feed
+
+    /// Opens an authenticated socket (requires a signer) and streams live ticker
+    /// + trades for the focused market. No-op when not signed in — the screen
+    /// then stays on its REST snapshot.
+    func startLive(signer: (any RequestSigning)?, environment: KalshiEnvironment) async {
+        guard let signer, socket == nil, !focusedMarketTicker.isEmpty else { return }
+        let socket = KalshiSocket(environment: environment, signer: signer)
+        self.socket = socket
+        let stream = await socket.events()
+        await socket.connect()
+        await socket.subscribe(to: [.ticker, .trade], markets: [focusedMarketTicker])
+        liveTask = Task { [weak self] in
+            for await event in stream {
+                guard let self else { break }
+                await self.handle(live: event)
+            }
+        }
+    }
+
+    /// Tears down the live socket (call on disappear).
+    func stopLive() {
+        liveTask?.cancel(); liveTask = nil
+        let closing = socket
+        socket = nil
+        isLive = false
+        liveLastCents = nil; liveYesAskCents = nil; liveNoAskCents = nil
+        Task { await closing?.disconnect() }
+    }
+
+    private func handle(live event: SocketEvent) {
+        switch event {
+        case .connected:
+            isLive = true
+        case .disconnected:
+            isLive = false
+        case .ticker(let t):
+            guard t.marketTicker == focusedMarketTicker else { return }
+            if let c = cents(t.priceDollars) ?? t.price { liveLastCents = c }
+            if let c = cents(t.yesAskDollars) ?? t.yesAsk { liveYesAskCents = c }
+            // NO ask = 100 − best YES bid.
+            if let yb = cents(t.yesBidDollars) ?? t.yesBid { liveNoAskCents = 100 - yb }
+        case .trade(let t):
+            guard t.marketTicker == focusedMarketTicker else { return }
+            prepend(liveTrade: t)
+            refreshBookThrottled()
+        default:
+            break
+        }
+    }
+
+    private func prepend(liveTrade t: TradeUpdate) {
+        let trade = Trade(
+            tradeId: "live-\(trades.count)-\(focusedMarketTicker)",
+            ticker: t.marketTicker ?? focusedMarketTicker,
+            countFp: t.countFp,
+            yesPriceDollars: t.yesPriceDollars,
+            noPriceDollars: t.noPriceDollars,
+            count: t.count,
+            takerSide: t.takerSide,
+            createdTime: ISO8601DateFormatter().string(from: Date())
+        )
+        trades.insert(trade, at: 0)
+        if trades.count > 40 { trades.removeLast(trades.count - 40) }
+    }
+
+    private func refreshBookThrottled() {
+        let now = Date()
+        guard now.timeIntervalSince(lastBookRefresh) > 2 else { return }
+        lastBookRefresh = now
+        let client = self.client
+        let ticker = focusedMarketTicker
+        Task { [weak self] in
+            guard let book = try? await client.orderbook(ticker: ticker, depth: 12) else { return }
+            await self?.setOrderbook(book)
+        }
+    }
+
+    private func setOrderbook(_ book: Orderbook) { orderbook = book }
+
+    private func cents(_ value: KalshiDecimal?) -> Int? {
+        guard let value else { return nil }
+        return Int(NSDecimalNumber(decimal: value.value * 100).doubleValue.rounded())
     }
 
     private func loadFocusedDetail(marketTicker: String) async {

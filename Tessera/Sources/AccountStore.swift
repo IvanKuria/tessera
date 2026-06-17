@@ -51,6 +51,15 @@ final class AccountStore {
     private var signer: KalshiSigner?
     private var client: KalshiClient?
 
+    // MARK: - Shared access (for Portfolio + live WebSocket feed)
+
+    /// The signed REST client, when signed in (read-only reuse by other stores).
+    var authedClient: KalshiClient? { client }
+    /// The request signer, for opening an authenticated WebSocket.
+    var liveSigner: (any RequestSigning)? { signer }
+    /// The active SDK environment.
+    var kalshiEnvironment: KalshiEnvironment { env.kalshi }
+
     // MARK: - Init
 
     init() {

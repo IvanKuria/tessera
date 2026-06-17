@@ -6,6 +6,7 @@ import KalshiKit
 /// white canvas. Handles both binary and multi-outcome events.
 struct DetailView: View {
     let event: EventVM
+    var account: AccountStore
     var onBuy: (_ marketTicker: String, _ side: OrderSide) -> Void = { _, _ in }
 
     @State private var store = DetailStore()
@@ -29,7 +30,9 @@ struct DetailView: View {
         .navigationTitle("")
         .task {
             await store.load(event: event)
+            await store.startLive(signer: account.liveSigner, environment: account.kalshiEnvironment)
         }
+        .onDisappear { store.stopLive() }
         .onChange(of: store.timeframe) { _, _ in
             Task { await store.loadChartSeries() }
         }
@@ -107,6 +110,9 @@ struct DetailView: View {
                         .font(Theme.num(15, .semibold))
                 }
                 .foregroundStyle(delta >= 0 ? Theme.yes : Theme.no)
+            }
+            if store.isLive {
+                LiveDot().padding(.leading, 4)
             }
         }
     }
@@ -241,6 +247,7 @@ struct DetailView: View {
     // MARK: - Derived display values
 
     private var focusedYesCents: Int? {
+        if let live = store.liveYesAskCents { return live }
         if let dollars = store.market?.yesAskDollars?.value {
             return cents(dollars)
         }
@@ -248,6 +255,7 @@ struct DetailView: View {
     }
 
     private var focusedNoCents: Int? {
+        if let live = store.liveNoAskCents { return live }
         if let dollars = store.market?.noAskDollars?.value {
             return cents(dollars)
         }
@@ -259,12 +267,14 @@ struct DetailView: View {
     }
 
     private var impliedPercentText: String {
+        if let live = store.liveLastCents { return "\(live)%" }
         if let pct = store.market?.impliedPercent { return "\(pct)%" }
         if let pct = focusedOutcome?.percent { return "\(pct)%" }
         return "—"
     }
 
     private var lastPriceText: String {
+        if let live = store.liveLastCents { return "\(live)¢" }
         if let dollars = store.market?.lastPriceDollars?.value {
             return "\(cents(dollars) ?? 0)¢"
         }

@@ -66,6 +66,59 @@ public extension KalshiClient {
         )
     }
 
+    // MARK: - Fills
+
+    /// Lists the account's executed trades (fills). Path: `/portfolio/fills`.
+    ///
+    /// Requires a configured signer; throws ``KalshiError/notAuthenticated`` otherwise.
+    ///
+    /// - Parameters:
+    ///   - ticker: scope to a single market ticker.
+    ///   - limit: page size.
+    ///   - cursor: pagination cursor.
+    func fills(
+        ticker: String? = nil,
+        limit: Int? = nil,
+        cursor: String? = nil
+    ) async throws -> FillsResponse {
+        var query: [URLQueryItem] = []
+        if let ticker { query.append(URLQueryItem(name: "ticker", value: ticker)) }
+        if let limit { query.append(URLQueryItem(name: "limit", value: String(limit))) }
+        if let cursor { query.append(URLQueryItem(name: "cursor", value: cursor)) }
+
+        return try await send(
+            method: .get,
+            path: "/portfolio/fills",
+            query: query,
+            authenticated: true
+        )
+    }
+
+    // MARK: - Settlements
+
+    /// Lists the account's settled-market outcomes. Path: `/portfolio/settlements`.
+    ///
+    /// Requires a configured signer; throws ``KalshiError/notAuthenticated`` otherwise.
+    ///
+    /// - Parameters:
+    ///   - limit: page size.
+    ///   - cursor: pagination cursor.
+    func settlements(
+        limit: Int? = nil,
+        cursor: String? = nil
+    ) async throws -> SettlementsResponse {
+        var query: [URLQueryItem] = []
+        if let limit { query.append(URLQueryItem(name: "limit", value: String(limit))) }
+        if let cursor { query.append(URLQueryItem(name: "cursor", value: cursor)) }
+
+        return try await send(
+            method: .get,
+            path: "/portfolio/settlements",
+            query: query,
+            authenticated: true
+        )
+    }
+
     /// Places an order. `POST /portfolio/orders`. Unwraps ``OrderResponse``.
     ///
     /// The request is encoded with ``KalshiJSON/encoder`` (camelCase →
