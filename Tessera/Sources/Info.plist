@@ -20,8 +20,6 @@
 	<string>0.1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>LSUIElement</key>
-	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Unofficial app for Kalshi. Not affiliated with Kalshi / KalshiEX LLC.</string>
 </dict>

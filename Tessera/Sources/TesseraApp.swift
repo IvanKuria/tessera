@@ -1,11 +1,8 @@
 import SwiftUI
 
-/// Accessory (menu-bar) mode: no Dock icon by default; flips to regular when a
-/// window opens.
+/// Standard app behavior: quit when the main window is closed (single-window app).
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
-    }
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 }
 
 @main
@@ -24,11 +21,6 @@ struct TesseraApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra(store.menuBarTitle, systemImage: "chart.line.uptrend.xyaxis") {
-            MenuBarView(store: store)
-        }
-        .menuBarExtraStyle(.window)
-
         Window("Tessera", id: "main") {
             RootView(store: store, account: account, alerts: alerts, triggers: triggers)
                 .frame(minWidth: 980, minHeight: 660)
