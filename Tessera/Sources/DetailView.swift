@@ -156,7 +156,7 @@ struct DetailView: View {
                 select(outcome.id)
             } label: {
                 HStack(spacing: 11) {
-                    Circle().fill(dot ?? Theme.textTertiary.opacity(0.4)).frame(width: 9, height: 9)
+                    OutcomeAvatar(name: outcome.label, ring: dot ?? Theme.textTertiary, size: 32)
                     Text(outcome.label)
                         .font(Theme.ui(14, isSelected ? .semibold : .regular))
                         .foregroundStyle(Theme.text)
