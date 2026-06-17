@@ -262,6 +262,16 @@ final class AccountStore {
     }
 
     private func readable(_ error: Error) -> String {
-        (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        // A 401 almost always means the selected environment doesn't match where
+        // the key was created — surface that explicitly.
+        if case let KalshiError.http(status, message, _) = error, status == 401 {
+            return """
+            Authentication failed (401) on \(env.badge). Make sure the selected \
+            environment matches where you created your API key: kalshi.com keys \
+            are Production; demo.kalshi.co keys are Demo. Use the account menu to \
+            switch environments. (\(message ?? "token authentication failure"))
+            """
+        }
+        return (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
     }
 }

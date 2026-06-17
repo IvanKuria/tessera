@@ -94,6 +94,11 @@ struct DashboardView: View {
             Menu {
                 Button("Portfolio") { showPortfolio = true }
                 Button("Refresh balance") { Task { await account.refreshAccount() } }
+                if account.env == .demo {
+                    Button("Switch to Production (real money)") { account.setEnv(.production) }
+                } else {
+                    Button("Switch to Demo") { account.setEnv(.demo) }
+                }
                 Button("Sign out", role: .destructive) { account.signOut() }
             } label: {
                 HStack(spacing: 6) {
