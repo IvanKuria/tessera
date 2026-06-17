@@ -8,10 +8,13 @@ Packages/
 *.xcworkspace/xcuserdata/
 .swiftpm/
 
-# Xcode (for the app target, later)
+# Xcode
 DerivedData/
 xcuserdata/
 *.xcuserstate
+
+# xcodegen-generated project — regenerate with `xcodegen generate`
+Tessera/Tessera.xcodeproj/
 
 # Secrets — never commit API keys or PEMs
 *.pem

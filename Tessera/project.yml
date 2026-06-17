@@ -1,0 +1,43 @@
+name: Tessera
+options:
+  bundleIdPrefix: app.tessera
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+packages:
+  KalshiKit:
+    path: ../KalshiKit
+
+targets:
+  Tessera:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+    dependencies:
+      - package: KalshiKit
+        product: KalshiKit
+    info:
+      path: Sources/Info.plist
+      properties:
+        # Menu-bar / accessory app: no Dock icon by default.
+        LSUIElement: true
+        CFBundleDisplayName: Tessera
+        CFBundleName: Tessera
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        NSHumanReadableCopyright: "Unofficial app for Kalshi. Not affiliated with Kalshi / KalshiEX LLC."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.tessera.Tessera
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "6.0"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        # Local/dev builds: allow building unsigned. Real distribution signs with
+        # a Developer ID (see milestone 7).
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
