@@ -230,15 +230,20 @@ final class AccountStore {
                 buyMaxCost: nil
             )
         } else {
+            // Kalshi has no true "market" order — every order needs a price. Send a
+            // marketable immediate-or-cancel limit at the aggressive bound (99¢ to
+            // buy, 1¢ to sell) so it fills right away at the best available price
+            // and cancels any unfilled remainder rather than resting.
+            let aggressive = action == .buy ? 99 : 1
             request = CreateOrderRequest(
                 ticker: marketTicker,
                 action: action,
                 side: side,
                 count: count,
-                type: "market",
-                yesPrice: nil,
-                noPrice: nil,
-                timeInForce: nil,
+                type: "limit",
+                yesPrice: side == .yes ? aggressive : nil,
+                noPrice: side == .no ? aggressive : nil,
+                timeInForce: .immediateOrCancel,
                 clientOrderId: orderId,
                 buyMaxCost: nil
             )

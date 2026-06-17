@@ -377,11 +377,16 @@ struct TradeTicketView: View {
     }
 
     private func inlineError(_ message: String) -> some View {
-        Text(message)
-            .font(Theme.ui(11.5))
-            .foregroundStyle(Theme.no)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .fixedSize(horizontal: false, vertical: true)
+        // Errors (esp. full Kalshi reject bodies) can be long — make them scroll
+        // and be selectable so they're never clipped by the ticket's height.
+        ScrollView {
+            Text(message)
+                .font(Theme.ui(11.5))
+                .foregroundStyle(Theme.no)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .textSelection(.enabled)
+        }
+        .frame(maxHeight: 110)
     }
 
     // MARK: - Submit
