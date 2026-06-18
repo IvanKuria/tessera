@@ -10,6 +10,7 @@ enum Theme {
     static let no    = Color(hex: 0xD91616) // NO / down / negative
     static let brand = Color(hex: 0x28CC95) // brand/marketing green
     static let forest = Color(hex: 0x003221) // deep brand accent
+    static let info  = Color(hex: 0x265CFF) // neutral accent: in-progress / informational (overlays, MA line)
 
     // Surfaces — light, flat.
     static let bg      = Color.white

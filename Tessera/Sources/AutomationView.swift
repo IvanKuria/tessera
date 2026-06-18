@@ -12,11 +12,20 @@ struct AutomationView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker("", selection: $tab) {
-                ForEach(Tab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+            HStack(spacing: 0) {
+                ForEach(Tab.allCases, id: \.self) { t in
+                    Button { withAnimation(.easeOut(duration: 0.15)) { tab = t } } label: {
+                        Text(t.rawValue)
+                            .font(Theme.ui(12, tab == t ? .semibold : .regular))
+                            .foregroundStyle(tab == t ? Theme.text : Theme.textSecondary)
+                            .padding(.horizontal, 18).padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 7).fill(tab == t ? Theme.surface : Color.clear))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-            .pickerStyle(.segmented).labelsHidden()
-            .frame(width: 220)
+            .padding(2)
+            .background(RoundedRectangle(cornerRadius: 9).fill(Theme.subtle))
             .padding(.vertical, 12)
 
             Divider().overlay(Theme.divider)
@@ -236,8 +245,8 @@ private struct TriggersTab: View {
 
     private func stateColor(_ s: TriggerState) -> Color {
         switch s {
-        case .armed:     return Color(hex: 0x265CFF)
-        case .firing:    return Color(hex: 0xF59F00)
+        case .armed:     return Theme.info
+        case .firing:    return Theme.text
         case .filled:    return Theme.yes
         case .cancelled: return Theme.textTertiary
         case .error:     return Theme.no
@@ -260,7 +269,7 @@ private struct AutomationHeader: View {
                 Spacer()
                 connectionBadge(connection)
             }
-            Text(subtitle).font(Theme.ui(12)).foregroundStyle(warn ? Color(hex: 0xF59F00) : Theme.textSecondary)
+            Text(subtitle).font(Theme.ui(12)).foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -362,9 +371,9 @@ private struct Segmented: View {
                 let value = options[key] ?? false
                 Button { selection = value } label: {
                     Text(key)
-                        .font(Theme.ui(11.5, selection == value ? .semibold : .regular))
-                        .foregroundStyle(selection == value ? Theme.text : Theme.textTertiary)
-                        .padding(.horizontal, 11).padding(.vertical, 5)
+                        .font(Theme.ui(12, selection == value ? .semibold : .regular))
+                        .foregroundStyle(selection == value ? Theme.text : Theme.textSecondary)
+                        .padding(.horizontal, 12).padding(.vertical, 5)
                         .background(RoundedRectangle(cornerRadius: 7).fill(selection == value ? Theme.surface : Color.clear))
                 }.buttonStyle(.plain)
             }
@@ -416,7 +425,7 @@ private struct PrimaryButton: View {
 private func connectionBadge(_ state: SocketConnectionState) -> some View {
     let (text, color): (String, Color) = switch state {
     case .connected:    ("Live", Theme.yes)
-    case .connecting:   ("Connecting…", Color(hex: 0xF59F00))
+    case .connecting:   ("Connecting…", Theme.info)
     case .disconnected: ("Offline", Theme.textTertiary)
     }
     return HStack(spacing: 5) {

@@ -244,7 +244,7 @@ struct CandleChartView: View {
             Text("H \(Int(hi.rounded()))¢  L \(Int(lo.rounded()))¢")
                 .font(Theme.num(11)).foregroundStyle(Theme.textTertiary)
             if showMA {
-                Text("MA\(maPeriod)").font(Theme.num(11, .semibold)).foregroundStyle(Color(hex: 0xF59F00))
+                Text("MA\(maPeriod)").font(Theme.num(11, .semibold)).foregroundStyle(Theme.info)
             }
         }
     }
@@ -376,7 +376,7 @@ struct CandleChartView: View {
                 ForEach(movingAverage, id: \.id) { p in
                     LineMark(x: .value("Bar", p.id), y: .value("MA", p.value),
                              series: .value("series", "ma"))
-                        .foregroundStyle(Color(hex: 0xF59F00))
+                        .foregroundStyle(Theme.info)
                         .lineStyle(StrokeStyle(lineWidth: 1.6))
                         .interpolationMethod(.monotone)
                 }
