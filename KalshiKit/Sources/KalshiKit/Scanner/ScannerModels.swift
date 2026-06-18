@@ -34,6 +34,11 @@ public enum ScannerWarning: Codable, Sendable, Hashable {
     case thinDepth(available: Decimal)
 }
 
+/// Which exchange a leg trades on. Optional on `Leg` (defaults to nil = Kalshi)
+/// so existing single-venue data and call sites are unaffected; the cross-venue
+/// arbitrage feature sets it explicitly.
+public enum Venue: String, Codable, Sendable, Hashable { case kalshi, polymarket }
+
 public struct Leg: Codable, Sendable, Hashable {
     public let marketTicker: String
     public let side: Side
@@ -42,9 +47,11 @@ public struct Leg: Codable, Sendable, Hashable {
     public let feeCents: Decimal
     public let depthAvailable: Decimal
     public let vwapCents: Decimal
-    public init(marketTicker: String, side: Side, priceCents: Int, qty: Decimal, feeCents: Decimal, depthAvailable: Decimal, vwapCents: Decimal) {
+    public let venue: Venue?
+    public init(marketTicker: String, side: Side, priceCents: Int, qty: Decimal, feeCents: Decimal, depthAvailable: Decimal, vwapCents: Decimal, venue: Venue? = nil) {
         self.marketTicker = marketTicker; self.side = side; self.priceCents = priceCents
         self.qty = qty; self.feeCents = feeCents; self.depthAvailable = depthAvailable; self.vwapCents = vwapCents
+        self.venue = venue
     }
 }
 
@@ -95,7 +102,13 @@ public struct Opportunity: Identifiable, Codable, Sendable, Hashable {
     }
 
     public static func makeID(kind: OpportunityKind, legs: [Leg]) -> String {
-        let key = legs.map { "\($0.marketTicker):\($0.side.rawValue)" }.sorted().joined(separator: "+")
+        // Single-venue (nil) legs keep their original id string for stability; a
+        // venue prefix is added only when set, so cross-venue legs with the same
+        // ticker on different exchanges don't collide.
+        let key = legs.map { leg -> String in
+            if let v = leg.venue { return "\(v.rawValue):\(leg.marketTicker):\(leg.side.rawValue)" }
+            return "\(leg.marketTicker):\(leg.side.rawValue)"
+        }.sorted().joined(separator: "+")
         return "\(kind.rawKey)|\(key)"
     }
 }
