@@ -225,3 +225,109 @@ struct BoundLegsGroup: View {
     }
 }
 
+// MARK: - Why-mispriced explainer (Task 16)
+
+/// A collapsible, plain-language explanation of why this opportunity exists, with
+/// a worked $-example computed from the user's current stake and an honest ceiling.
+struct WhyMispricedExplainer: View {
+    let opp: Opportunity
+    let result: DutchingResult
+    @State private var expanded: Bool
+
+    init(opp: Opportunity, result: DutchingResult, startExpanded: Bool) {
+        self.opp = opp
+        self.result = result
+        _expanded = State(initialValue: startExpanded)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.18)) { expanded.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "lightbulb.fill").font(.system(size: 11))
+                        .foregroundStyle(Theme.info)
+                    Text("Why is this mispriced?").font(Theme.ui(12.5, .semibold))
+                        .foregroundStyle(Theme.text)
+                    Spacer()
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 10, weight: .semibold)).foregroundStyle(Theme.textTertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if expanded {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(reason).font(Theme.ui(12)).foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if result.contracts > 0 {
+                        workedExample
+                    }
+
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "exclamationmark.circle").font(.system(size: 10))
+                            .foregroundStyle(Color(hex: 0xF59F00))
+                        Text(honestCeiling).font(Theme.ui(11)).foregroundStyle(Theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.top, 10)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.subtle))
+    }
+
+    private var workedExample: some View {
+        let cost = dollars(result.totalCostCents)
+        let profit = dollars(result.profitCents)
+        return VStack(alignment: .leading, spacing: 3) {
+            Text("Worked example").font(Theme.ui(9.5, .semibold)).tracking(0.6)
+                .foregroundStyle(Theme.textTertiary)
+            Text("Stake \(money(cost)) across \(opp.legs.count) legs (\(result.contracts) contracts each). "
+                 + (opp.lane == .lock
+                    ? "Whichever outcome wins, you collect more than you paid — net \(money(profit)) after fees."
+                    : "If the price relationship holds to settlement, you net about \(money(profit)) after fees."))
+                .font(Theme.ui(11.5)).foregroundStyle(Theme.text)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 9).fill(Theme.surface))
+    }
+
+    private var reason: String {
+        switch opp.kind {
+        case .lock(.multiOutcomeUnderround):
+            return "This is a mutually-exclusive event: exactly one outcome will resolve YES. Right now the cost to buy YES on every outcome adds up to less than the \u{0024}1 one of them is guaranteed to pay — even after fees. That gap is a provable lock."
+        case .lock(.multiOutcomeOverround):
+            return "Exactly one outcome resolves YES, so all but one resolve NO. Buying NO on every outcome costs less than the guaranteed NO payouts — after fees, that difference is yours regardless of which outcome wins."
+        case .edge(.ladderMonotonicity):
+            return "Two rungs of the same threshold ladder are priced inconsistently: a looser threshold is cheaper than it logically should be versus a tighter one. Buying the cheap looser YES and the tighter NO captures the slip — but it's only an edge, not a provable lock, because depth can vanish."
+        case .edge(.wideSpread):
+            return "The gap between the best buy and sell price is unusually wide. That's a signal the quote may be stale or lightly traded — worth a look, not a sized trade."
+        case .edge(.staleQuote):
+            return "This quote hasn't moved in a while. It may be lagging the true market — a signal to watch, not an arbitrage."
+        }
+    }
+
+    private var honestCeiling: String {
+        var notes: [String] = []
+        if opp.maxContractsInt < 25 {
+            notes.append("depth is thin — only ~\(opp.maxContractsInt) contracts fit before the edge erodes")
+        }
+        if opp.fitsDollars < 50 {
+            notes.append("this is small money (≈\(money(opp.fitsDollars)) deployable)")
+        }
+        notes.append("opportunities like this can disappear in seconds as the book moves")
+        return "Honest ceiling: " + notes.joined(separator: "; ") + "."
+    }
+
+    private func dollars(_ cents: Decimal) -> Double { NSDecimalNumber(decimal: cents).doubleValue / 100 }
+    private func money(_ d: Double) -> String { String(format: "$%.2f", d) }
+}
+
