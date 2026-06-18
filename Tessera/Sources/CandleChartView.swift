@@ -11,8 +11,10 @@ struct CandleChartView: View {
     let isLoading: Bool
     @Binding var timeframe: DetailStore.Timeframe
     var onTimeframeChange: () -> Void = {}
-    /// Create a price alert at `cents`, firing when the price crosses `above`/below.
-    var onSetAlert: (_ cents: Int, _ above: Bool) -> Void = { _, _ in }
+    /// Live last-traded price (cents) from the WebSocket feed, when connected. The
+    /// latest (forming) candle and the last-price line tick to this; closed
+    /// historical candles stay fixed.
+    var liveLastCents: Int? = nil
 
     @State private var showVolume = true
     @State private var showSpread = true
@@ -58,17 +60,24 @@ struct CandleChartView: View {
             .onEnded { _ in pinchBase = nil }
     }
 
-    // Alert composer
-    @State private var showAlertBar = false
-    @State private var alertCents: Double = 50
-    @State private var alertAbove = true
-    @State private var alertAdded = false
+    /// Candles with the latest bar updated to the live price (forming candle), so
+    /// the most recent close/high/low tick in real time. Closed bars are untouched.
+    private var displayCandles: [CandleVM] {
+        guard let live = liveLastCents, let last = candles.last else { return candles }
+        let c = Double(live)
+        let formed = CandleVM(
+            id: last.id, date: last.date, open: last.open,
+            high: max(last.high, c), low: min(last.low, c), close: c,
+            volume: last.volume, yesBid: last.yesBid, yesAsk: last.yesAsk
+        )
+        return candles.dropLast() + [formed]
+    }
 
     /// Candles inside the current zoom window (or all).
     private var visibleCandles: [CandleVM] {
-        guard let z = zoomRange else { return candles }
-        let inside = candles.filter { z.contains($0.id) }
-        return inside.count >= 2 ? inside : candles
+        guard let z = zoomRange else { return displayCandles }
+        let inside = displayCandles.filter { z.contains($0.id) }
+        return inside.count >= 2 ? inside : displayCandles
     }
 
     /// Simple moving average period, scaled to the candle count.
@@ -76,12 +85,13 @@ struct CandleChartView: View {
 
     /// SMA of closes, one point per candle once the window fills.
     private var movingAverage: [(id: Int, value: Double)] {
-        guard candles.count >= maPeriod else { return [] }
-        let closes = candles.map(\.close)
+        let series = displayCandles
+        guard series.count >= maPeriod else { return [] }
+        let closes = series.map(\.close)
         var out: [(Int, Double)] = []
-        for i in (maPeriod - 1)..<candles.count {
+        for i in (maPeriod - 1)..<series.count {
             let avg = closes[(i - maPeriod + 1)...i].reduce(0, +) / Double(maPeriod)
-            out.append((candles[i].id, avg))
+            out.append((series[i].id, avg))
         }
         return out
     }
@@ -90,7 +100,7 @@ struct CandleChartView: View {
 
     /// Fast O(1) lookup for the hovered candle.
     private var byID: [Int: CandleVM] {
-        Dictionary(uniqueKeysWithValues: candles.map { ($0.id, $0) })
+        Dictionary(uniqueKeysWithValues: displayCandles.map { ($0.id, $0) })
     }
 
     private var selectedCandle: CandleVM? {
@@ -162,70 +172,15 @@ struct CandleChartView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             controlRow
-            if showAlertBar { alertBar }
             if hasData { priceReadout }
             chartArea
         }
     }
 
-    /// Inline composer to create a price alert at a chosen level + direction.
-    private var alertBar: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "bell.fill").font(.system(size: 11)).foregroundStyle(Theme.yes)
-            Text("Alert when crosses").font(Theme.ui(12)).foregroundStyle(Theme.textSecondary)
-            HStack(spacing: 0) {
-                dirSeg("Above", true)
-                dirSeg("Below", false)
-            }
-            HStack(spacing: 6) {
-                stepBtn("minus") { alertCents = max(1, alertCents - 1); alertAdded = false }
-                Text("\(Int(alertCents))¢").font(Theme.num(13, .semibold)).foregroundStyle(Theme.text).frame(width: 38)
-                stepBtn("plus") { alertCents = min(99, alertCents + 1); alertAdded = false }
-            }
-            Button {
-                onSetAlert(Int(alertCents), alertAbove)
-                withAnimation { alertAdded = true }
-            } label: {
-                Text("Add").font(Theme.ui(12, .semibold)).foregroundStyle(Theme.onAccent)
-                    .padding(.horizontal, 12).padding(.vertical, 5)
-                    .background(Capsule().fill(Theme.yes))
-            }
-            .buttonStyle(.plain)
-            if alertAdded {
-                Label("Added", systemImage: "checkmark.circle.fill")
-                    .font(Theme.ui(11, .semibold)).foregroundStyle(Theme.yes)
-            }
-            Spacer()
-        }
-        .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(RoundedRectangle(cornerRadius: 10).fill(Theme.subtle))
-    }
-
-    private func dirSeg(_ title: String, _ above: Bool) -> some View {
-        Button { alertAbove = above } label: {
-            Text(title)
-                .font(Theme.ui(11.5, alertAbove == above ? .semibold : .regular))
-                .foregroundStyle(alertAbove == above ? Theme.text : Theme.textTertiary)
-                .padding(.horizontal, 9).padding(.vertical, 4)
-                .background(RoundedRectangle(cornerRadius: 6).fill(alertAbove == above ? Theme.surface : Color.clear))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func stepBtn(_ system: String, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: system).font(.system(size: 10, weight: .bold))
-                .foregroundStyle(Theme.textSecondary)
-                .frame(width: 20, height: 20)
-                .background(Circle().fill(Theme.surface).overlay(Circle().stroke(Theme.border, lineWidth: 1)))
-        }
-        .buttonStyle(.plain)
-    }
-
     /// Current price + change over the visible window.
     private var priceReadout: some View {
-        let current = candles.last?.close ?? 0
-        let base = candles.first?.open ?? current
+        let current = displayCandles.last?.close ?? 0
+        let base = displayCandles.first?.open ?? current
         let change = current - base
         let up = change >= 0
         return HStack(alignment: .firstTextBaseline, spacing: 9) {
@@ -238,6 +193,12 @@ struct CandleChartView: View {
             }
             .font(Theme.num(13, .semibold)).foregroundStyle(up ? Theme.yes : Theme.no)
             Text("· \(timeframe.rawValue)").font(Theme.ui(12)).foregroundStyle(Theme.textTertiary)
+            if liveLastCents != nil {
+                HStack(spacing: 4) {
+                    Circle().fill(Theme.yes).frame(width: 6, height: 6)
+                    Text("LIVE").font(Theme.ui(9, .bold)).tracking(0.5).foregroundStyle(Theme.yes)
+                }
+            }
             Spacer(minLength: 8)
             let hi = visibleCandles.map(\.high).max() ?? current
             let lo = visibleCandles.map(\.low).min() ?? current
@@ -280,13 +241,6 @@ struct CandleChartView: View {
             chip("Log", isOn: logScale) { logScale.toggle() }
             if zoomRange != nil {
                 chip("Reset", isOn: false) { withAnimation { zoomRange = nil } }
-            }
-            chip("Alert", isOn: showAlertBar) {
-                if !showAlertBar {
-                    alertCents = Double(candles.last?.close.rounded() ?? 50)
-                    alertAdded = false
-                }
-                withAnimation { showAlertBar.toggle() }
             }
             Spacer(minLength: 12)
             selector
@@ -331,7 +285,7 @@ struct CandleChartView: View {
         Chart {
             // Spread band first, so it sits behind the candles.
             if showSpread {
-                ForEach(candles) { c in
+                ForEach(displayCandles) { c in
                     if let bid = c.yesBid, let ask = c.yesAsk {
                         AreaMark(
                             x: .value("Bar", c.id),
@@ -344,7 +298,7 @@ struct CandleChartView: View {
                 }
             }
 
-            ForEach(candles) { c in
+            ForEach(displayCandles) { c in
                 let color = c.isUp ? Theme.yes : Theme.no
 
                 // Wick.
@@ -382,9 +336,9 @@ struct CandleChartView: View {
                 }
             }
 
-            // Always-on last-price line + tag at the latest close.
-            if let last = candles.last {
-                let up = (candles.first.map { last.close >= $0.open } ?? true)
+            // Always-on last-price line + tag at the latest close (live when connected).
+            if let last = displayCandles.last {
+                let up = (displayCandles.first.map { last.close >= $0.open } ?? true)
                 RuleMark(y: .value("Last", last.close))
                     .foregroundStyle((up ? Theme.yes : Theme.no).opacity(0.45))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
@@ -445,16 +399,17 @@ struct CandleChartView: View {
 
     private var volumeChart: some View {
         Chart {
-            ForEach(candles) { c in
+            ForEach(displayCandles) { c in
                 BarMark(
                     x: .value("Bar", c.id),
-                    y: .value("Volume", c.volume),
+                    y: .value("Volume", min(c.volume, volumeYMax)),
                     width: .ratio(0.6)
                 )
-                .foregroundStyle((c.isUp ? Theme.yes : Theme.no).opacity(0.45))
+                .foregroundStyle((c.isUp ? Theme.yes : Theme.no).opacity(0.55))
             }
         }
         .chartXScale(domain: xDomainValues)
+        .chartYScale(domain: 0...volumeYMax)
         .chartXAxis(.hidden)
         .chartYAxis {
             AxisMarks(position: .trailing, values: .automatic(desiredCount: 2)) { value in
@@ -473,6 +428,19 @@ struct CandleChartView: View {
     /// Shared x-scale domain for both panels — the zoom window if set, else full.
     private var xDomainValues: ClosedRange<Int> {
         zoomRange ?? xDomain ?? 0...1
+    }
+
+    /// Top of the volume axis: the 95th-percentile bar (with headroom), not the
+    /// max. Prediction-market volume is heavily right-skewed — a single settlement
+    /// or launch bar can be 100× a normal day — so scaling to the true max flattens
+    /// every ordinary bar to a sub-pixel sliver. Outliers clip to the top instead.
+    private var volumeYMax: Double {
+        let vols = visibleCandles.map(\.volume).filter { $0 > 0 }.sorted()
+        guard let maxV = vols.last else { return 1 }
+        let p95 = vols[Int(Double(vols.count - 1) * 0.95)]
+        // If volume is fairly uniform, just use the real max; else clamp to p95.
+        let top = (maxV <= p95 * 2) ? maxV : p95
+        return max(top * 1.15, 1)
     }
 
     // MARK: - Tooltip

@@ -14,6 +14,12 @@ struct DetailView: View {
     @State private var selectedOutcomeID: String?
     @State private var chartMode: ChartMode = .line
 
+    // Inline alert composer (shared by the line + candle charts).
+    @State private var showAlertBar = false
+    @State private var alertCents: Double = 50
+    @State private var alertAbove = true
+    @State private var alertAdded = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -206,7 +212,10 @@ struct DetailView: View {
                         .lineLimit(1)
                 }
                 Spacer()
+                alertToggle
             }
+
+            if showAlertBar { alertBar }
 
             if chartMode == .candles {
                 CandleChartView(
@@ -214,14 +223,7 @@ struct DetailView: View {
                     isLoading: store.isLoading,
                     timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 }),
                     onTimeframeChange: { Task { await store.loadFocusedCandles() } },
-                    onSetAlert: { cents, above in
-                        alerts.addRule(AlertRule(
-                            marketTicker: store.focusedMarketTicker,
-                            label: candleOutcomeLabel ?? event.title,
-                            thresholdCents: cents,
-                            crossesUpward: above
-                        ))
-                    }
+                    liveLastCents: store.liveLastCents
                 )
             } else {
                 PriceChartView(
@@ -251,6 +253,86 @@ struct DetailView: View {
                 .foregroundStyle(chartMode == mode ? Theme.text : Theme.textSecondary)
                 .padding(.horizontal, 14).padding(.vertical, 5)
                 .background(RoundedRectangle(cornerRadius: 7).fill(chartMode == mode ? Theme.surface : Color.clear))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Standalone Alert toggle, sat beside the Line/Candles control. Works in both
+    /// chart modes — alerts are about the focused market, not the chart style.
+    private var alertToggle: some View {
+        Button {
+            if !showAlertBar {
+                alertCents = Double(focusedYesCents ?? Int(store.liveLastCents ?? 50))
+                alertAdded = false
+            }
+            withAnimation(.easeOut(duration: 0.15)) { showAlertBar.toggle() }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: showAlertBar ? "bell.fill" : "bell")
+                    .font(.system(size: 11, weight: .semibold))
+                Text("Alert").font(Theme.ui(12, .semibold))
+            }
+            .foregroundStyle(showAlertBar ? Theme.onAccent : Theme.text)
+            .padding(.horizontal, 12).padding(.vertical, 6)
+            .background(Capsule().fill(showAlertBar ? Theme.yes : Theme.subtle))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Inline composer to create a price alert at a chosen level + direction.
+    private var alertBar: some View {
+        HStack(spacing: 10) {
+            Text("Notify when").font(Theme.ui(12)).foregroundStyle(Theme.textSecondary)
+            HStack(spacing: 0) {
+                alertDirSeg("Rises to ≥", true)
+                alertDirSeg("Falls to ≤", false)
+            }
+            HStack(spacing: 6) {
+                alertStep("minus") { alertCents = max(1, alertCents - 1); alertAdded = false }
+                Text("\(Int(alertCents))¢").font(Theme.num(13, .semibold)).foregroundStyle(Theme.text).frame(width: 38)
+                alertStep("plus") { alertCents = min(99, alertCents + 1); alertAdded = false }
+            }
+            Button {
+                alerts.addRule(AlertRule(
+                    marketTicker: store.focusedMarketTicker,
+                    label: candleOutcomeLabel ?? event.title,
+                    thresholdCents: Int(alertCents),
+                    crossesUpward: alertAbove
+                ))
+                withAnimation { alertAdded = true }
+            } label: {
+                Text("Add alert").font(Theme.ui(12, .semibold)).foregroundStyle(Theme.onAccent)
+                    .padding(.horizontal, 12).padding(.vertical, 5)
+                    .background(Capsule().fill(Theme.yes))
+            }
+            .buttonStyle(.plain)
+            if alertAdded {
+                Label("Added", systemImage: "checkmark.circle.fill")
+                    .font(Theme.ui(11, .semibold)).foregroundStyle(Theme.yes)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Theme.subtle))
+    }
+
+    private func alertDirSeg(_ title: String, _ above: Bool) -> some View {
+        Button { alertAbove = above } label: {
+            Text(title)
+                .font(Theme.ui(11.5, alertAbove == above ? .semibold : .regular))
+                .foregroundStyle(alertAbove == above ? Theme.text : Theme.textTertiary)
+                .padding(.horizontal, 10).padding(.vertical, 4)
+                .background(RoundedRectangle(cornerRadius: 6).fill(alertAbove == above ? Theme.surface : Color.clear))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func alertStep(_ system: String, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: system).font(.system(size: 10, weight: .bold))
+                .foregroundStyle(Theme.textSecondary)
+                .frame(width: 20, height: 20)
+                .background(Circle().fill(Theme.surface).overlay(Circle().stroke(Theme.border, lineWidth: 1)))
         }
         .buttonStyle(.plain)
     }
