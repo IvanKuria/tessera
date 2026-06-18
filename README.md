@@ -105,7 +105,9 @@ mac-app/
 
 ## Contributing
 
-Issues and pull requests are welcome. This is an open project — if you find a bug, have a feature idea, or want to extend `KalshiKit`, please open an issue first to discuss. By contributing you agree your work is licensed under the project's MIT License.
+Issues and pull requests are welcome. This is an open project — if you find a bug, have a feature idea, or want to extend `KalshiKit`, please open an issue first to discuss. AI-assisted contributions are welcome too: you can open a regular PR (include the prompts you used) or a **prompt request** issue that shares the prompt for review before any code is written.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for build instructions, architecture, coding conventions, and the PR checklist. By contributing you agree your work is licensed under the project's MIT License.
 
 ## License
 
