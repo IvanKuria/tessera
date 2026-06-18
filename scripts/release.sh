@@ -11,7 +11,7 @@
 #      "Developer ID Application".  Verify with: security find-identity -v -p codesigning
 #   2. A notarytool credential profile saved in the keychain:
 #        xcrun notarytool store-credentials tessera-notary \
-#          --apple-id "you@example.com" --team-id 6YNA9C4HJ6 \
+#          --apple-id "you@example.com" --team-id 347LA37C2B \
 #          --password "<app-specific-password>"
 #      (App-specific password: https://account.apple.com ▸ Sign-In & Security.)
 #   3. create-dmg installed:  brew install create-dmg
@@ -23,7 +23,7 @@
 set -euo pipefail
 
 # --- Config ------------------------------------------------------------------
-TEAM_ID="${TEAM_ID:-6YNA9C4HJ6}"
+TEAM_ID="${TEAM_ID:-347LA37C2B}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-tessera-notary}"
 SCHEME="Tessera"
 APP_NAME="Tessera"

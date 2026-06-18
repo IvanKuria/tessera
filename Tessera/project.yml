@@ -47,7 +47,7 @@ targets:
         # team. Set DEVELOPMENT_TEAM to your 10-char Team ID; ad-hoc "-" signing
         # will NOT provision App Groups. Until then the app falls back to its
         # Application Support cache (see AppGroup.containerURL).
-        DEVELOPMENT_TEAM: "6YNA9C4HJ6" # TODO: set your Apple Developer Team ID
+        DEVELOPMENT_TEAM: "347LA37C2B" # TODO: set your Apple Developer Team ID
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "Apple Development"
 
@@ -83,6 +83,6 @@ targets:
         MACOSX_DEPLOYMENT_TARGET: "14.0"
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_ENTITLEMENTS: TesseraWidget.entitlements
-        DEVELOPMENT_TEAM: "6YNA9C4HJ6" # TODO: set your Apple Developer Team ID (same as app)
+        DEVELOPMENT_TEAM: "347LA37C2B" # TODO: set your Apple Developer Team ID (same as app)
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "Apple Development"

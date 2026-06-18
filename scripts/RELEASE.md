@@ -17,7 +17,7 @@ and can't be automated from here.
    <https://account.apple.com> (Sign-In & Security ▸ App-Specific Passwords), then:
    ```sh
    xcrun notarytool store-credentials tessera-notary \
-     --apple-id "you@example.com" --team-id 6YNA9C4HJ6 --password "abcd-efgh-ijkl-mnop"
+     --apple-id "you@example.com" --team-id 347LA37C2B --password "abcd-efgh-ijkl-mnop"
    ```
 3. **Tools**: `brew install create-dmg xcodegen`.
 4. **Register identifiers** on <https://developer.apple.com> under your team so
