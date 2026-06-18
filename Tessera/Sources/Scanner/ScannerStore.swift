@@ -47,6 +47,9 @@ final class ScannerStore {
     /// watch set actually changes (see `restartFeed`).
     private var socket: KalshiSocket?
     private var consumeTask: Task<Void, Never>?
+    /// Periodic freshness/auto-expiry sweep (Task 14).
+    private var expiryTimer: Task<Void, Never>?
+
     /// The priced snapshot (WITH fetched books) that produced each surfaced
     /// event's opportunities — keyed by event ticker. The live revalue rebuilds
     /// from these so it keeps the last REST depth ladders.
@@ -74,12 +77,14 @@ final class ScannerStore {
                 try? await Task.sleep(for: .seconds(secs))
             }
         }
+        startExpiryTimer()
     }
 
     func stop() {
         scanLoop?.cancel()
         scanLoop = nil
         consumeTask?.cancel(); consumeTask = nil
+        expiryTimer?.cancel(); expiryTimer = nil
         Task { [socket] in await socket?.disconnect() }
         socket = nil
         lastWatchSet = []
@@ -362,6 +367,46 @@ final class ScannerStore {
 
     /// `KalshiDecimal` dollars → integer cents (Decimal half-up, no Double error).
     private func centsOf(_ d: KalshiDecimal?) -> Int? { d?.centsRounded }
+
+    // MARK: - Freshness + auto-expiry (Task 14)
+
+    private func startExpiryTimer() {
+        guard expiryTimer == nil else { return }
+        expiryTimer = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(5))
+                await self?.sweepFreshness()
+            }
+        }
+    }
+
+    /// Ages every opportunity, drops live status after silence, and expires stale
+    /// REST-only rows — but NEVER while disconnected, since then the REST snapshot
+    /// is the only floor we have and must stay valid.
+    private func sweepFreshness() {
+        guard !oppsByID.isEmpty else { return }
+        let now = Date()
+        let silence = Double(settings.maxLiveSilenceSeconds)
+        let stale = Double(settings.maxStaleSeconds)
+        let offline = connection == .disconnected
+
+        var changed = false
+        for (id, var o) in oppsByID {
+            let age = now.timeIntervalSince(o.freshnessTimestamp)
+            if o.freshnessAgeSeconds != age { o.freshnessAgeSeconds = age; changed = true }
+            if o.isLive && age > silence { o.isLive = false; changed = true }
+            oppsByID[id] = o
+            // Expire only when we have a live feed; offline keeps the REST floor.
+            if !offline && !o.isLive && age > stale {
+                oppsByID.removeValue(forKey: id)
+                changed = true
+            }
+        }
+        if changed {
+            reproject()
+            restartFeed()
+        }
+    }
 
     /// Lock + ladder opportunities need real orderbook depth to price net edge;
     /// spread/stale flags are quote-only signals.
