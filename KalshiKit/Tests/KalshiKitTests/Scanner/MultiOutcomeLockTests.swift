@@ -31,15 +31,16 @@ final class MultiOutcomeLockTests: XCTestCase {
         let s = snap([mkt("A", yesAsk: 30, yesBid: 29), mkt("B", yesAsk: 33, yesBid: 32)], me: false)
         XCTAssertTrue(MultiOutcomeLockDetector.scan(s).isEmpty)
     }
-    func testNonTilingWarningWhenSumFarBelow100() {          // T4
+    func testSumFarBelow100IsRejectedNotAFakeLock() {        // T4 (corrected)
+        // Σ yesAsk = 60 (gap 40 ≫ maxLockGap) ⇒ outcomes missing / non-tiling.
+        // This must NOT surface as a giant fake +40¢ "lock" — reject it.
         let s = snap([mkt("A", yesAsk: 20, yesBid: 19), mkt("B", yesAsk: 20, yesBid: 19), mkt("C", yesAsk: 20, yesBid: 19)])
-        let opps = MultiOutcomeLockDetector.scan(s)
-        XCTAssertEqual(opps.count, 1)
-        XCTAssertTrue(opps[0].warnings.contains { if case .possibleNonTiling = $0 { return true }; return false })
+        XCTAssertTrue(MultiOutcomeLockDetector.scan(s).isEmpty)
     }
     func testOverroundBuyNoAll() {                           // T8
-        // yesBid {60,55} => Σ=115>100 → overround; noAsk = {40,45}; gross = 100*(2-1) - 85 = 15
-        let s = snap([mkt("A", yesAsk: 62, yesBid: 60), mkt("B", yesAsk: 57, yesBid: 55)])
+        // yesBid {54,52} => Σ=106>100, gap 6 (within maxLockGap) → real overround;
+        // noAsk = {46,48}; gross = 100*(2-1) - 94 = 6.
+        let s = snap([mkt("A", yesAsk: 56, yesBid: 54), mkt("B", yesAsk: 54, yesBid: 52)])
         let opps = MultiOutcomeLockDetector.scan(s)
         XCTAssertTrue(opps.contains { $0.kind == .lock(.multiOutcomeOverround) })
     }

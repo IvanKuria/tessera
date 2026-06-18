@@ -24,7 +24,9 @@ public enum MultiOutcomeLockDetector: Detector {
         let asks = markets.map { $0.bestYesAskCents }
         guard !asks.contains(nil) else { return nil }
         let yesSum = asks.compactMap { $0 }.reduce(0, +)
-        guard yesSum < 100 else { return nil }
+        // A real underround sits JUST under 100. Far below ⇒ missing/illiquid
+        // outcomes faking a giant edge — reject, don't display fake +50¢ "locks".
+        guard yesSum < 100, yesSum >= 100 - snap.config.maxLockGapCents else { return nil }
         return price(kind: .lock(.multiOutcomeUnderround), event: e, markets: markets, side: .yes,
                      ladderFor: { $0.yesAskLadder }, perSetGuaranteedPayout: 100, yesSumCents: Decimal(yesSum), snap: snap)
     }
@@ -34,7 +36,9 @@ public enum MultiOutcomeLockDetector: Detector {
         let bids = markets.map { $0.bestYesBidCents }
         guard !bids.contains(nil) else { return nil }
         let yesBidSum = bids.compactMap { $0 }.reduce(0, +)
-        guard yesBidSum > 100 else { return nil }
+        // Symmetric guard: a real overround sits just above 100; far above ⇒
+        // non-tiling / overlapping outcomes, not a guaranteed buy-NO-all lock.
+        guard yesBidSum > 100, yesBidSum <= 100 + snap.config.maxLockGapCents else { return nil }
         let payout = 100 * (markets.count - 1)
         return price(kind: .lock(.multiOutcomeOverround), event: e, markets: markets, side: .no,
                      ladderFor: { $0.noAskLadder }, perSetGuaranteedPayout: payout, yesSumCents: Decimal(yesBidSum), snap: snap)
@@ -104,7 +108,10 @@ public enum LadderMonotonicityDetector: Detector {
 
     public static func scan(_ snapshot: ScanSnapshot) -> [Opportunity] {
         var out: [Opportunity] = []
-        for event in snapshot.events {
+        // Nested-threshold ladders (e.g. "BTC > X") are NOT mutually exclusive —
+        // multiple rungs resolve YES together. Mutually-exclusive groups (candidate
+        // sets, disjoint range brackets) belong to the lock detector, not here.
+        for event in snapshot.events where !event.mutuallyExclusive {
             // Order by strike (threshold ladder). Require ≥2 with strikes.
             let rungs = event.markets.filter { $0.strike != nil && $0.bestYesAskCents != nil && $0.bestYesBidCents != nil }
                 .sorted { ($0.strike ?? 0) < ($1.strike ?? 0) }

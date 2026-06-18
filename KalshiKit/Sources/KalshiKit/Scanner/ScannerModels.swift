@@ -109,6 +109,11 @@ public struct DetectorConfig: Sendable, Hashable {
     public var staleQuoteSeconds: Double
     public var wideSpreadCents: Int
     public var lockTilingToleranceCents: Int
+    /// Max distance a mutually-exclusive group's YES sum may sit from 100¢ and
+    /// still count as a real lock. A genuine under/overround is a sub-few-cent
+    /// gap; a sum FAR from 100 means we're missing outcomes (illiquid legs, hidden
+    /// "other" bucket, non-exhaustive snapshot) — that's not a lock, it's noise.
+    public var maxLockGapCents: Int
     public var halfRateSeriesPrefixes: [String]
     public init(
         feeRole: KalshiFees.Role = .taker,
@@ -119,12 +124,14 @@ public struct DetectorConfig: Sendable, Hashable {
         staleQuoteSeconds: Double = 120,
         wideSpreadCents: Int = 8,
         lockTilingToleranceCents: Int = 5,
+        maxLockGapCents: Int = 8,
         halfRateSeriesPrefixes: [String] = ["INX", "NASDAQ100"]
     ) {
         self.feeRole = feeRole; self.maxStakeContracts = maxStakeContracts
         self.minNetEdgeCents = minNetEdgeCents; self.hurdleAPR = hurdleAPR
         self.kalshiCollateralAPY = kalshiCollateralAPY; self.staleQuoteSeconds = staleQuoteSeconds
         self.wideSpreadCents = wideSpreadCents; self.lockTilingToleranceCents = lockTilingToleranceCents
+        self.maxLockGapCents = maxLockGapCents
         self.halfRateSeriesPrefixes = halfRateSeriesPrefixes
     }
 }

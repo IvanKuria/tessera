@@ -95,8 +95,23 @@ final class ScannerStore {
             let quoteSnaps = ScanShaping.eventSnapshots(from: events, books: [:], now: now)
             phase = .detecting
             let candidates = DetectionEngine.scan(ScanSnapshot(events: quoteSnaps, now: now, config: cfg))
-            let candidateTickers = Set(candidates.flatMap { $0.legs.map(\.marketTicker) })
-            coverage.candidates = candidates.count
+            // Only Locks and Ladders need depth-aware confirmation — they're the
+            // expensive-but-rare candidates. Flag-only Spread/Stale edges are derived
+            // from quotes alone and must NOT drag thousands of illiquid markets into
+            // the orderbook fan-out (that's what blew the funnel up).
+            // Take the most promising candidates first (best quote-pass net edge) and
+            // collect their markets until we hit a HARD cap on books-per-pass. This
+            // guarantees a pass always completes quickly and never melts the API,
+            // regardless of how noisy detection is on a given snapshot.
+            let confirmable = candidates
+                .filter { needsBookConfirm($0.kind) }
+                .sorted { $0.netEdgeCents > $1.netEdgeCents }
+            var candidateTickers = Set<String>()
+            for c in confirmable {
+                if candidateTickers.count >= Self.maxConfirmTickers { break }
+                candidateTickers.formUnion(c.legs.map(\.marketTicker))
+            }
+            coverage.candidates = confirmable.count
 
             // Stage 4: confirm — fetch real books only for candidate markets, bounded.
             phase = .confirming(candidateTickers.count)
@@ -157,8 +172,32 @@ final class ScannerStore {
         let cfg = makeConfig()
         let all = DetectionEngine.ranked(Array(oppsByID.values), config: cfg)
         locks = settings.locksEnabled ? all.filter { $0.lane == .lock } : []
-        edges = settings.edgesEnabled ? all.filter { $0.lane == .edge } : []
+
+        // Edges lane: real ladder edges first (depth-priced), then only the
+        // strongest flag-only signals — never a wall of thousands of wide-spread
+        // illiquid markets, which would bury the actionable rows.
+        let allEdges = all.filter { $0.lane == .edge }
+        let ladderEdges = allEdges.filter { needsBookConfirm($0.kind) }
+        let flagEdges = allEdges.filter { !needsBookConfirm($0.kind) }
+            .sorted { $0.confidence > $1.confidence }
+            .prefix(Self.maxFlagEdges)
+        edges = settings.edgesEnabled ? ladderEdges + Array(flagEdges) : []
     }
+
+    /// Lock + ladder opportunities need real orderbook depth to price net edge;
+    /// spread/stale flags are quote-only signals.
+    private func needsBookConfirm(_ kind: OpportunityKind) -> Bool {
+        switch kind {
+        case .lock: return true
+        case .edge(.ladderMonotonicity): return true
+        case .edge(.wideSpread), .edge(.staleQuote): return false
+        }
+    }
+
+    private static let maxFlagEdges = 25
+    /// Hard ceiling on orderbooks confirmed per pass — bounds cost + latency so a
+    /// scan always finishes in seconds even when detection is noisy.
+    private static let maxConfirmTickers = 120
 
     private func makeConfig() -> DetectorConfig {
         DetectorConfig(

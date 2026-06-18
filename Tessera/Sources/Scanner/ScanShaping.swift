@@ -14,8 +14,10 @@ enum ScanShaping {
             let markets = (e.markets ?? []).filter { $0.status.isOpen }.map { m -> MarketSnapshot in
                 let book = books[m.ticker]
                 let yesLadder = book?.yesAskLevels.map { (price: $0.priceCents, size: $0.size) } ?? []
-                // `noBidLevels` are NO-bid prices; the NO-ask ladder (buying NO) is 100 − each.
-                let noLadder = book?.noBidLevels.map { (price: 100 - $0.priceCents, size: $0.size) } ?? []
+                // To BUY NO you lift the NO ask = 100 − YES bid, with the size resting
+                // at that YES-bid level. So the NO-ask ladder is derived from
+                // `yesBidLevels` (NOT `noBidLevels`, which are the YES-ask side).
+                let noLadder = book?.yesBidLevels.map { (price: 100 - $0.priceCents, size: $0.size) } ?? []
                 let yesAsk = centsOf(m.yesAskDollars) ?? m.yesAsk
                 let yesBid = centsOf(m.yesBidDollars) ?? m.yesBid
                 return MarketSnapshot(
@@ -53,13 +55,17 @@ enum ScanShaping {
         return [(price, Decimal(1000))]
     }
 
-    /// Heuristic strike parse from a Kalshi cap/floor ticker tail (e.g. `…-T75`,
-    /// `…-B6000`): take the trailing number after the last `-`, dropping the
-    /// leading T/B letter. Unparseable tickers yield `nil` (no ladder edge).
+    /// Strict strike parse from a Kalshi cap/floor ticker tail. Only the canonical
+    /// threshold encodings count: the last `-` segment must be `T`/`B` followed by
+    /// a pure number (e.g. `…-T75` → 75, `…-B6000` → 6000). Anything else — most
+    /// notably mutually-exclusive *candidate* markets like `…-MAMDANI` — yields
+    /// `nil`, so they're never mistaken for a monotone threshold ladder.
     static func parseStrike(_ market: Market) -> Double? {
-        let t = market.ticker
-        guard let dash = t.lastIndex(of: "-") else { return nil }
-        let tail = t[t.index(after: dash)...].dropFirst()
-        return Double(tail)
+        guard let dash = market.ticker.lastIndex(of: "-") else { return nil }
+        let seg = market.ticker[market.ticker.index(after: dash)...]
+        guard let first = seg.first, first == "T" || first == "B", seg.count > 1 else { return nil }
+        let num = seg.dropFirst()
+        guard num.allSatisfy({ $0.isNumber || $0 == "." }), let value = Double(num) else { return nil }
+        return value
     }
 }
