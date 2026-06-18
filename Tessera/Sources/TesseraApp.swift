@@ -14,6 +14,7 @@ struct TesseraApp: App {
     @State private var alerts = AlertEngine()
     @State private var triggers: TriggerEngine
     @State private var scanner: ScannerStore
+    @State private var arb = ArbStore()
     @State private var paper = PaperLedger()
 
     private var appearance: AppAppearance { AppAppearance(rawValue: appearanceRaw) ?? .system }
@@ -28,7 +29,7 @@ struct TesseraApp: App {
 
     var body: some Scene {
         Window("Tessera", id: "main") {
-            RootView(store: store, account: account, alerts: alerts, triggers: triggers, scanner: scanner, paper: paper)
+            RootView(store: store, account: account, alerts: alerts, triggers: triggers, scanner: scanner, arb: arb, paper: paper)
                 .frame(minWidth: 980, minHeight: 660)
                 // Follow the user's appearance preference; `.system` (nil) tracks macOS live.
                 .preferredColorScheme(appearance.colorScheme)
@@ -37,6 +38,7 @@ struct TesseraApp: App {
                     await alerts.start()
                     await triggers.start()
                     scanner.start()
+                    arb.start()
                 }
         }
         .windowResizability(.contentMinSize)

@@ -9,15 +9,17 @@ struct RootView: View {
     var alerts: AlertEngine
     var triggers: TriggerEngine
     var scanner: ScannerStore
+    var arb: ArbStore
     var paper: PaperLedger
 
     enum Section: String, Hashable, CaseIterable {
-        case markets, portfolio, scanner, automation
+        case markets, portfolio, scanner, arb, automation
         var title: String {
             switch self {
             case .markets:    return "Markets"
             case .portfolio:  return "Portfolio"
             case .scanner:    return "Scanner"
+            case .arb:        return "Arbitrage"
             case .automation: return "Alerts & Triggers"
             }
         }
@@ -26,6 +28,7 @@ struct RootView: View {
             case .markets:    return "chart.line.uptrend.xyaxis"
             case .portfolio:  return "briefcase.fill"
             case .scanner:    return "scope"
+            case .arb:        return "arrow.left.arrow.right.circle"
             case .automation: return "bell.badge.fill"
             }
         }
@@ -36,12 +39,13 @@ struct RootView: View {
     @State private var showOnboarding = false
     @AppStorage("appAppearance") private var appearanceRaw = AppAppearance.system.rawValue
 
-    init(store: WatchlistStore, account: AccountStore, alerts: AlertEngine, triggers: TriggerEngine, scanner: ScannerStore, paper: PaperLedger) {
+    init(store: WatchlistStore, account: AccountStore, alerts: AlertEngine, triggers: TriggerEngine, scanner: ScannerStore, arb: ArbStore, paper: PaperLedger) {
         self.store = store
         self.account = account
         self.alerts = alerts
         self.triggers = triggers
         self.scanner = scanner
+        self.arb = arb
         self.paper = paper
         _portfolioStore = State(initialValue: PortfolioStore(account: account))
     }
@@ -179,6 +183,8 @@ struct RootView: View {
                 .id(account.isSignedIn)  // reload section when sign-in changes
         case .scanner:
             ScannerView(store: scanner, account: account, paper: paper)
+        case .arb:
+            ArbView(store: arb)
         case .automation:
             AutomationView(alerts: alerts, triggers: triggers)
         }

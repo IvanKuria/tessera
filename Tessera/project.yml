@@ -8,6 +8,10 @@ options:
 packages:
   KalshiKit:
     path: ../KalshiKit
+  PolymarketKit:
+    path: ../PolymarketKit
+  ArbEngine:
+    path: ../ArbEngine
 
 targets:
   Tessera:
@@ -19,6 +23,10 @@ targets:
     dependencies:
       - package: KalshiKit
         product: KalshiKit
+      - package: PolymarketKit
+        product: PolymarketKit
+      - package: ArbEngine
+        product: ArbEngine
       # Embed the widget extension into Contents/PlugIns.
       - target: TesseraWidget
         embed: true

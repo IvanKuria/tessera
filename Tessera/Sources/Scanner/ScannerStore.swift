@@ -439,6 +439,9 @@ final class ScannerStore {
         case .lock: return true
         case .edge(.ladderMonotonicity): return true
         case .edge(.wideSpread), .edge(.staleQuote): return false
+        // Cross-venue arb is detected app-side (ArbStore), never by the Scanner;
+        // it never reaches this path, but the switch must stay exhaustive.
+        case .edge(.crossVenueArb): return true
         }
     }
 
