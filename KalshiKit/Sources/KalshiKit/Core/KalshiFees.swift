@@ -26,7 +26,7 @@ public enum KalshiFees {
         case maker
 
         /// The fee rate applied to `C × P × (1 − P)`.
-        var rate: Decimal {
+        public var rate: Decimal {
             switch self {
             case .taker: return Decimal(7) / Decimal(100)       // 0.07
             case .maker: return Decimal(175) / Decimal(10_000)  // 0.0175
