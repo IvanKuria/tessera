@@ -1,4 +1,0 @@
-[    2079ms] [WARNING] [WEBSOCKETS] - Subscribing {params: Object, subscriber: bound wsHandlePosition} @ https://kalshi.com/_next/static/chunks/0q~3w5mbasf3y.js?dpl=dpl_5n2uBDVdBiT753dtMFbkugYTNzNm:3
-[    2081ms] [WARNING] [WEBSOCKETS] - Subscribing {params: Object, subscriber: bound queueWsHandleTicker} @ https://kalshi.com/_next/static/chunks/0q~3w5mbasf3y.js?dpl=dpl_5n2uBDVdBiT753dtMFbkugYTNzNm:3
-[    2081ms] [WARNING] [WEBSOCKETS] - Subscribing {params: Object, subscriber: bound wsHandleLifecycle} @ https://kalshi.com/_next/static/chunks/0q~3w5mbasf3y.js?dpl=dpl_5n2uBDVdBiT753dtMFbkugYTNzNm:3
-[    3422ms] [LOG] datadog init config.commitRef 3be88e87007a11af6c7f7f54607b0c7128c4ad11 @ https://kalshi.com/_next/static/chunks/0q~3w5mbasf3y.js?dpl=dpl_5n2uBDVdBiT753dtMFbkugYTNzNm:3
