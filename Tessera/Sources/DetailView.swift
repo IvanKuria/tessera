@@ -7,6 +7,7 @@ import KalshiKit
 struct DetailView: View {
     let event: EventVM
     var account: AccountStore
+    var alerts: AlertEngine
     var onBuy: (_ marketTicker: String, _ side: OrderSide) -> Void = { _, _ in }
 
     @State private var store = DetailStore()
@@ -212,7 +213,15 @@ struct DetailView: View {
                     candles: store.focusedCandles,
                     isLoading: store.isLoading,
                     timeframe: Binding(get: { store.timeframe }, set: { store.timeframe = $0 }),
-                    onTimeframeChange: { Task { await store.loadFocusedCandles() } }
+                    onTimeframeChange: { Task { await store.loadFocusedCandles() } },
+                    onSetAlert: { cents, above in
+                        alerts.addRule(AlertRule(
+                            marketTicker: store.focusedMarketTicker,
+                            label: candleOutcomeLabel ?? event.title,
+                            thresholdCents: cents,
+                            crossesUpward: above
+                        ))
+                    }
                 )
             } else {
                 PriceChartView(

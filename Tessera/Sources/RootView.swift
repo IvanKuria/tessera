@@ -123,7 +123,7 @@ struct RootView: View {
     @ViewBuilder private var detail: some View {
         switch selection ?? .markets {
         case .markets:
-            DashboardView(store: store, account: account)
+            DashboardView(store: store, account: account, alerts: alerts)
         case .portfolio:
             PortfolioView(store: portfolioStore, showsClose: false)
                 .id(account.isSignedIn)  // reload section when sign-in changes

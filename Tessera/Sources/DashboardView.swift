@@ -14,6 +14,7 @@ struct TradeTarget: Identifiable, Hashable {
 struct DashboardView: View {
     var store: WatchlistStore
     var account: AccountStore
+    var alerts: AlertEngine
 
     @State private var category = "All"
     @State private var path: [EventVM] = []
@@ -36,7 +37,7 @@ struct DashboardView: View {
                 }
             }
             .navigationDestination(for: EventVM.self) { event in
-                DetailView(event: event, account: account, onBuy: { ticker, side in
+                DetailView(event: event, account: account, alerts: alerts, onBuy: { ticker, side in
                     tradeTarget = TradeTarget(marketTicker: ticker, eventTitle: event.title, side: side)
                 })
                 .background(Theme.bg)

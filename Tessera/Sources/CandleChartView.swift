@@ -11,12 +11,33 @@ struct CandleChartView: View {
     let isLoading: Bool
     @Binding var timeframe: DetailStore.Timeframe
     var onTimeframeChange: () -> Void = {}
+    /// Create a price alert at `cents`, firing when the price crosses `above`/below.
+    var onSetAlert: (_ cents: Int, _ above: Bool) -> Void = { _, _ in }
 
     @State private var showVolume = true
     @State private var showSpread = true
     @State private var showMA = true
     @State private var logScale = false
     @State private var selectedID: Int?
+
+    // Drag-to-zoom
+    @State private var zoomMode = false
+    @State private var zoomRange: ClosedRange<Int>?
+    @State private var dragStartX: CGFloat?
+    @State private var dragCurrentX: CGFloat?
+
+    // Alert composer
+    @State private var showAlertBar = false
+    @State private var alertCents: Double = 50
+    @State private var alertAbove = true
+    @State private var alertAdded = false
+
+    /// Candles inside the current zoom window (or all).
+    private var visibleCandles: [CandleVM] {
+        guard let z = zoomRange else { return candles }
+        let inside = candles.filter { z.contains($0.id) }
+        return inside.count >= 2 ? inside : candles
+    }
 
     /// Simple moving average period, scaled to the candle count.
     private var maPeriod: Int { max(3, min(12, candles.count / 4)) }
@@ -57,8 +78,8 @@ struct CandleChartView: View {
     /// Dynamic y-domain from low…high, padded ~6%, clamped to [0,100]. In log mode
     /// the lower bound is kept strictly above 0 (> 0.5¢).
     private var yDomain: ClosedRange<Double> {
-        let lows = candles.map(\.low)
-        let highs = candles.map(\.high)
+        let lows = visibleCandles.map(\.low)
+        let highs = visibleCandles.map(\.high)
         guard let lo = lows.min(), let hi = highs.max(), hi > lo else {
             return logScale ? 0.5...100 : 0...100
         }
@@ -109,9 +130,64 @@ struct CandleChartView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             controlRow
+            if showAlertBar { alertBar }
             if hasData { priceReadout }
             chartArea
         }
+    }
+
+    /// Inline composer to create a price alert at a chosen level + direction.
+    private var alertBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "bell.fill").font(.system(size: 11)).foregroundStyle(Theme.yes)
+            Text("Alert when crosses").font(Theme.ui(12)).foregroundStyle(Theme.textSecondary)
+            HStack(spacing: 0) {
+                dirSeg("Above", true)
+                dirSeg("Below", false)
+            }
+            HStack(spacing: 6) {
+                stepBtn("minus") { alertCents = max(1, alertCents - 1); alertAdded = false }
+                Text("\(Int(alertCents))¢").font(Theme.num(13, .semibold)).foregroundStyle(Theme.text).frame(width: 38)
+                stepBtn("plus") { alertCents = min(99, alertCents + 1); alertAdded = false }
+            }
+            Button {
+                onSetAlert(Int(alertCents), alertAbove)
+                withAnimation { alertAdded = true }
+            } label: {
+                Text("Add").font(Theme.ui(12, .semibold)).foregroundStyle(Theme.onAccent)
+                    .padding(.horizontal, 12).padding(.vertical, 5)
+                    .background(Capsule().fill(Theme.yes))
+            }
+            .buttonStyle(.plain)
+            if alertAdded {
+                Label("Added", systemImage: "checkmark.circle.fill")
+                    .font(Theme.ui(11, .semibold)).foregroundStyle(Theme.yes)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 12).padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Theme.subtle))
+    }
+
+    private func dirSeg(_ title: String, _ above: Bool) -> some View {
+        Button { alertAbove = above } label: {
+            Text(title)
+                .font(Theme.ui(11.5, alertAbove == above ? .semibold : .regular))
+                .foregroundStyle(alertAbove == above ? Theme.text : Theme.textTertiary)
+                .padding(.horizontal, 9).padding(.vertical, 4)
+                .background(RoundedRectangle(cornerRadius: 6).fill(alertAbove == above ? Theme.surface : Color.clear))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func stepBtn(_ system: String, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: system).font(.system(size: 10, weight: .bold))
+                .foregroundStyle(Theme.textSecondary)
+                .frame(width: 20, height: 20)
+                .background(Circle().fill(Theme.surface).overlay(Circle().stroke(Theme.border, lineWidth: 1)))
+        }
+        .buttonStyle(.plain)
     }
 
     /// Current price + change over the visible window.
@@ -131,7 +207,14 @@ struct CandleChartView: View {
             }
             .font(Theme.num(13, .semibold)).foregroundStyle(up ? Theme.yes : Theme.no)
             Text("· \(timeframe.rawValue)").font(Theme.ui(12)).foregroundStyle(Theme.textTertiary)
-            Spacer()
+            Spacer(minLength: 8)
+            let hi = visibleCandles.map(\.high).max() ?? current
+            let lo = visibleCandles.map(\.low).min() ?? current
+            Text("H \(Int(hi.rounded()))¢  L \(Int(lo.rounded()))¢")
+                .font(Theme.num(11)).foregroundStyle(Theme.textTertiary)
+            if showMA {
+                Text("MA\(maPeriod)").font(Theme.num(11, .semibold)).foregroundStyle(Color(hex: 0xF59F00))
+            }
         }
     }
 
@@ -164,6 +247,17 @@ struct CandleChartView: View {
             chip("Vol", isOn: showVolume) { showVolume.toggle() }
             chip("Spread", isOn: showSpread) { showSpread.toggle() }
             chip("Log", isOn: logScale) { logScale.toggle() }
+            chip("Zoom", isOn: zoomMode) { withAnimation { zoomMode.toggle() } }
+            if zoomRange != nil {
+                chip("Reset", isOn: false) { withAnimation { zoomRange = nil; zoomMode = false } }
+            }
+            chip("Alert", isOn: showAlertBar) {
+                if !showAlertBar {
+                    alertCents = Double(candles.last?.close.rounded() ?? 50)
+                    alertAdded = false
+                }
+                withAnimation { showAlertBar.toggle() }
+            }
             Spacer(minLength: 12)
             selector
         }
@@ -314,6 +408,51 @@ struct CandleChartView: View {
             }
         }
         .chartXSelection(value: $selectedID)
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                if zoomMode, let anchor = proxy.plotFrame {
+                    let plot = geo[anchor]
+                    // Capture drags to select a zoom window (hover crosshair is
+                    // suppressed only while Zoom mode is armed).
+                    Rectangle().fill(Color.clear).contentShape(Rectangle())
+                        .gesture(
+                            DragGesture(minimumDistance: 4)
+                                .onChanged { v in
+                                    if dragStartX == nil { dragStartX = v.startLocation.x }
+                                    dragCurrentX = v.location.x
+                                }
+                                .onEnded { v in
+                                    let s = dragStartX ?? v.startLocation.x
+                                    let e = v.location.x
+                                    dragStartX = nil; dragCurrentX = nil
+                                    let lo = proxy.value(atX: min(s, e) - plot.minX, as: Int.self)
+                                    let hi = proxy.value(atX: max(s, e) - plot.minX, as: Int.self)
+                                    if let lo, let hi, hi - lo >= 2 {
+                                        withAnimation(.easeOut(duration: 0.2)) {
+                                            zoomRange = lo...hi
+                                            zoomMode = false
+                                        }
+                                    }
+                                }
+                        )
+                    if let s = dragStartX, let c = dragCurrentX {
+                        let x0 = min(s, c), x1 = max(s, c)
+                        Rectangle().fill(Theme.text.opacity(0.07))
+                            .overlay(Rectangle().stroke(Theme.textTertiary.opacity(0.45), lineWidth: 1))
+                            .frame(width: max(0, x1 - x0), height: plot.height)
+                            .position(x: (x0 + x1) / 2, y: plot.midY)
+                            .allowsHitTesting(false)
+                    } else {
+                        Text("Drag to zoom")
+                            .font(Theme.ui(11, .medium)).foregroundStyle(Theme.textTertiary)
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(Capsule().fill(Theme.surface.opacity(0.95)))
+                            .position(x: plot.midX, y: plot.minY + 14)
+                            .allowsHitTesting(false)
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Volume chart
@@ -345,9 +484,9 @@ struct CandleChartView: View {
         }
     }
 
-    /// Shared x-scale domain for both panels (falls back to a unit range if empty).
+    /// Shared x-scale domain for both panels — the zoom window if set, else full.
     private var xDomainValues: ClosedRange<Int> {
-        xDomain ?? 0...1
+        zoomRange ?? xDomain ?? 0...1
     }
 
     // MARK: - Tooltip
