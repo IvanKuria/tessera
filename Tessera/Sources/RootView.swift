@@ -174,33 +174,10 @@ struct RootView: View {
             PortfolioView(store: portfolioStore, showsClose: false)
                 .id(account.isSignedIn)  // reload section when sign-in changes
         case .scanner:
-            ScannerPlaceholderView(store: scanner)
+            ScannerView(store: scanner, account: account)
         case .automation:
             AutomationView(alerts: alerts, triggers: triggers)
         }
     }
 }
 
-/// Temporary placeholder so the scan funnel can be verified end-to-end before the
-/// real Scanner UI lands in Slice 3. Shows lane counts, last-scan time, any error,
-/// and a flat list of surfaced opportunities.
-struct ScannerPlaceholderView: View {
-    var store: ScannerStore
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Locks: \(store.locks.count)  ·  Edges: \(store.edges.count)").font(Theme.num(14))
-            Text(store.lastScan.map { "Last scan \($0)" } ?? "scanning…")
-                .font(Theme.ui(12)).foregroundStyle(Theme.textSecondary)
-            if let e = store.lastError {
-                Text(e).font(Theme.ui(11)).foregroundStyle(Theme.no)
-            }
-            List(store.locks + store.edges) { o in
-                Text("\(o.lane.rawValue.uppercased())  \(o.title)  net \(NSDecimalNumber(decimal: o.netEdgeCents).doubleValue, specifier: "%.1f")¢")
-                    .font(Theme.num(12))
-            }
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Theme.bg)
-    }
-}
