@@ -453,23 +453,28 @@ private final class PlacementModel: ObservableObject {
 struct OpportunityDetailPanel: View {
     let opp: Opportunity
     var account: AccountStore
+    var paper: PaperLedger
+    @Bindable var tracked: TrackedStore
     var onClose: () -> Void
 
     @State private var stakeDollars: Double
     @State private var showLeggingModal = false
     @State private var paperConfirmed = false
-    @State private var trackConfirmed = false
     @StateObject private var placement = PlacementModel()
 
     private let config = DetectorConfig()
 
-    init(opp: Opportunity, account: AccountStore, onClose: @escaping () -> Void) {
+    init(opp: Opportunity, account: AccountStore, paper: PaperLedger, tracked: TrackedStore, onClose: @escaping () -> Void) {
         self.opp = opp
         self.account = account
+        self.paper = paper
+        self.tracked = tracked
         self.onClose = onClose
         // Friendly default: min($50, fillable cap).
         _stakeDollars = State(initialValue: min(50, max(0, opp.fitsDollars)))
     }
+
+    private var isTracked: Bool { tracked.isTracked(opp.id) }
 
     private var result: DutchingResult {
         DutchingEngine.compute(opp: opp, stakeDollars: stakeDollars, config: config)
@@ -664,7 +669,10 @@ struct OpportunityDetailPanel: View {
             placeAllButton
 
             HStack(spacing: 10) {
-                Button { paperConfirmed = true } label: {
+                Button {
+                    paper.record(opp, stakeDollars: stakeDollars, contracts: result.contracts)
+                    paperConfirmed = true
+                } label: {
                     Text(paperConfirmed ? "Paper-trade recorded" : "Paper-trade this")
                         .font(Theme.ui(12.5, .semibold))
                         .foregroundStyle(paperConfirmed ? Theme.yes : Theme.text)
@@ -672,23 +680,28 @@ struct OpportunityDetailPanel: View {
                         .background(RoundedRectangle(cornerRadius: 10).stroke(paperConfirmed ? Theme.yes : Theme.border, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
-                .help("Paper-trade recorded — ledger coming in the next update")
+                .disabled(result.contracts < 1 || paperConfirmed)
+                .help("Logs this opportunity to your forward paper ledger — no real money")
 
-                Button { trackConfirmed = true } label: {
-                    Text(trackConfirmed ? "Tracking" : "Track & alert me")
-                        .font(Theme.ui(12.5, .semibold))
-                        .foregroundStyle(trackConfirmed ? Theme.info : Theme.textSecondary)
-                        .frame(maxWidth: .infinity).padding(.vertical, 9)
+                Button { tracked.toggle(opp.id) } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: isTracked ? "bell.fill" : "bell").font(.system(size: 10))
+                        Text(isTracked ? "Tracking" : "Track & alert me")
+                    }
+                    .font(Theme.ui(12.5, .semibold))
+                    .foregroundStyle(isTracked ? Theme.info : Theme.textSecondary)
+                    .frame(maxWidth: .infinity).padding(.vertical, 9)
+                    .background(RoundedRectangle(cornerRadius: 10).stroke(isTracked ? Theme.info : Theme.border, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
-                .help("Tracking — alerts coming in the next update")
+                .help(isTracked ? "We alert you on this regardless of the global threshold" : "Get a notification when this opportunity crosses up into actionable")
             }
 
             if paperConfirmed {
-                stubNote("Paper-trade recorded — ledger coming in the next update.")
+                stubNote("Recorded to your paper ledger — forward only, no real money. See the Paper P&L tab.")
             }
-            if trackConfirmed {
-                stubNote("Tracking — alerts coming in the next update.")
+            if isTracked {
+                stubNote("Tracking — you'll be alerted on a fresh actionable crossing (cooldown applies). See the Watching tab.")
             }
 
             placementProgress

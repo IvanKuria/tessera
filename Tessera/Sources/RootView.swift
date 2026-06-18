@@ -9,6 +9,7 @@ struct RootView: View {
     var alerts: AlertEngine
     var triggers: TriggerEngine
     var scanner: ScannerStore
+    var paper: PaperLedger
 
     enum Section: String, Hashable, CaseIterable {
         case markets, portfolio, scanner, automation
@@ -35,12 +36,13 @@ struct RootView: View {
     @State private var showOnboarding = false
     @AppStorage("appAppearance") private var appearanceRaw = AppAppearance.system.rawValue
 
-    init(store: WatchlistStore, account: AccountStore, alerts: AlertEngine, triggers: TriggerEngine, scanner: ScannerStore) {
+    init(store: WatchlistStore, account: AccountStore, alerts: AlertEngine, triggers: TriggerEngine, scanner: ScannerStore, paper: PaperLedger) {
         self.store = store
         self.account = account
         self.alerts = alerts
         self.triggers = triggers
         self.scanner = scanner
+        self.paper = paper
         _portfolioStore = State(initialValue: PortfolioStore(account: account))
     }
 
@@ -64,6 +66,8 @@ struct RootView: View {
             List(selection: $selection) {
                 ForEach(Section.allCases, id: \.self) { section in
                     Label(section.title, systemImage: section.icon)
+                        .font(.system(size: 14.5, weight: .medium))
+                        .padding(.vertical, 4)
                         .tag(section)
                 }
             }
@@ -78,7 +82,7 @@ struct RootView: View {
         }
         .safeAreaInset(edge: .top) {
             HStack { Wordmark(); Spacer() }
-                .padding(.horizontal, 14).padding(.top, 10).padding(.bottom, 4)
+                .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 6)
         }
     }
 
@@ -174,7 +178,7 @@ struct RootView: View {
             PortfolioView(store: portfolioStore, showsClose: false)
                 .id(account.isSignedIn)  // reload section when sign-in changes
         case .scanner:
-            ScannerView(store: scanner, account: account)
+            ScannerView(store: scanner, account: account, paper: paper)
         case .automation:
             AutomationView(alerts: alerts, triggers: triggers)
         }

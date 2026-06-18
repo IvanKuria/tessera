@@ -13,12 +13,25 @@ import KalshiKit
 struct ScannerView: View {
     @Bindable var store: ScannerStore
     var account: AccountStore
+    var paper: PaperLedger
 
     enum Lane: Hashable { case locks, edges }
     enum Mode: String { case simple, pro }
+    /// The secondary stickiness strip (spec §5).
+    enum Tab: String, CaseIterable { case live, watching, paper, digest
+        var title: String {
+            switch self {
+            case .live:     return "Live"
+            case .watching: return "Watching"
+            case .paper:    return "Paper P&L"
+            case .digest:   return "Digest"
+            }
+        }
+    }
 
     @State private var lane: Lane = .locks
     @AppStorage("scanner.mode") private var modeRaw = Mode.simple.rawValue
+    @State private var tab: Tab = .live
     @State private var selectedOpp: Opportunity?
 
     private var mode: Mode { Mode(rawValue: modeRaw) ?? .simple }
@@ -27,14 +40,50 @@ struct ScannerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
+            tabStrip
             Divider().overlay(Theme.divider)
-            content
+            switch tab {
+            case .live:
+                header
+                Divider().overlay(Theme.divider)
+                content
+            case .watching:
+                WatchingTab(store: store) { selectedOpp = $0 }
+            case .paper:
+                PaperPnLTab(paper: paper)
+            case .digest:
+                DigestTab(store: store)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.bg)
         .sheet(item: $selectedOpp) { opp in
-            OpportunityDetailPanel(opp: opp, account: account) { selectedOpp = nil }
+            OpportunityDetailPanel(opp: opp, account: account, paper: paper, tracked: store.tracked) { selectedOpp = nil }
+        }
+    }
+
+    // MARK: - Stickiness tab strip (Slice 6)
+
+    private var tabStrip: some View {
+        HStack(spacing: 22) {
+            ForEach(Tab.allCases, id: \.self) { t in
+                CategoryTab(title: tabTitle(t), selected: tab == t) {
+                    withAnimation(.easeOut(duration: 0.15)) { tab = t }
+                }
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 20).padding(.top, 12)
+    }
+
+    private func tabTitle(_ t: Tab) -> String {
+        switch t {
+        case .watching where !store.tracked.ids.isEmpty:
+            return "Watching · \(store.tracked.ids.count)"
+        case .paper where paper.entryCount > 0:
+            return "Paper P&L · \(paper.entryCount)"
+        default:
+            return t.title
         }
     }
 
