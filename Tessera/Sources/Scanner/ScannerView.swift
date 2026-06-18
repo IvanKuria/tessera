@@ -6,9 +6,10 @@ import KalshiKit
 /// readout, and a Filters stub. Body switches between the Simple list of cards
 /// and the Pro dense table, with honest loading / empty / offline / error states.
 ///
-/// Tapping a row's CTA selects an opportunity and presents a simple stub panel
-/// (the real execution panel arrives in Slice 5). Appearance follows the system —
-/// no `preferredColorScheme` override here.
+/// Tapping a row's CTA selects an opportunity and presents the real execution
+/// panel (`OpportunityDetailPanel`, Slice 5) — the dutching calculator, bound
+/// legs, explainer, and the legging-gated actions. Appearance follows the
+/// system — no `preferredColorScheme` override here.
 struct ScannerView: View {
     @Bindable var store: ScannerStore
     var account: AccountStore
@@ -33,7 +34,7 @@ struct ScannerView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.bg)
         .sheet(item: $selectedOpp) { opp in
-            OpportunityStubPanel(opp: opp) { selectedOpp = nil }
+            OpportunityDetailPanel(opp: opp, account: account) { selectedOpp = nil }
         }
     }
 
@@ -227,116 +228,5 @@ struct ScannerView: View {
         .foregroundStyle(Color(hex: 0xF59F00))
         .padding(.horizontal, 12).padding(.vertical, 8)
         .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: 0xF59F00).opacity(0.10)))
-    }
-}
-
-// MARK: - Stub execution panel (real panel = Slice 5)
-
-/// A minimal preview of the opportunity's legs + net edge, with a "coming soon"
-/// note. Replaced by the full dutching calculator / legging modal in Slice 5.
-struct OpportunityStubPanel: View {
-    let opp: Opportunity
-    var onClose: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Title bar.
-            HStack(alignment: .top, spacing: 10) {
-                VStack(alignment: .leading, spacing: 6) {
-                    LaneTag(lane: opp.lane)
-                    Text(opp.title).font(Theme.ui(16, .semibold)).foregroundStyle(Theme.text)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(opp.kindLabel).font(Theme.ui(11)).foregroundStyle(Theme.textSecondary)
-                }
-                Spacer()
-                Button { onClose() } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 18)).foregroundStyle(Theme.textTertiary)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(20)
-
-            Divider().overlay(Theme.divider)
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    if !opp.isFlagOnly {
-                        HStack(spacing: 24) {
-                            NetEdgeHero(cents: opp.netEdgePerContractDouble, lane: opp.lane)
-                            if opp.annualizedDouble > 0 {
-                                StatBlock(label: "Annualized", value: String(format: "%.0f%%", opp.annualizedDouble))
-                            }
-                            StatBlock(label: "Fits", value: String(format: "$%.0f", opp.fitsDollars))
-                            if opp.lane == .edge {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Confidence").font(Theme.ui(9.5, .semibold)).tracking(0.6)
-                                        .foregroundStyle(Theme.textTertiary)
-                                    ConfidenceMeter(score: opp.confidenceDouble)
-                                }
-                            }
-                        }
-                    } else {
-                        Text("Signal only — no sized trade. This flags a market worth a look, not an arbitrage.")
-                            .font(Theme.ui(12.5)).foregroundStyle(Theme.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    // Legs.
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("LEGS").font(Theme.ui(9.5, .semibold)).tracking(0.8)
-                            .foregroundStyle(Theme.textTertiary)
-                        ForEach(Array(opp.legs.enumerated()), id: \.offset) { _, leg in
-                            legRow(leg)
-                        }
-                    }
-
-                    if !opp.warningChips.isEmpty {
-                        FlowLayout(spacing: 6, lineSpacing: 6) {
-                            ForEach(Array(opp.warningChips.enumerated()), id: \.offset) { _, chip in
-                                WarningChip(text: chip.text, neutral: chip.neutral)
-                            }
-                        }
-                    }
-
-                    // Coming-soon note.
-                    HStack(spacing: 8) {
-                        Image(systemName: "hammer.fill").font(.system(size: 11))
-                        Text("Staking, the dutching calculator, and one-tap legging are coming soon.")
-                            .font(Theme.ui(11.5, .medium))
-                    }
-                    .foregroundStyle(Theme.textSecondary)
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Theme.subtle))
-                }
-                .padding(20)
-            }
-        }
-        .frame(width: 460, height: 520)
-        .background(Theme.bg)
-    }
-
-    private func legRow(_ leg: Leg) -> some View {
-        HStack(spacing: 10) {
-            Text(leg.side == .yes ? "YES" : "NO")
-                .font(Theme.ui(10, .bold))
-                .foregroundStyle(leg.side == .yes ? Theme.yes : Theme.no)
-                .frame(width: 34, alignment: .leading)
-            Text(leg.marketTicker)
-                .font(Theme.num(12)).foregroundStyle(Theme.text)
-                .lineLimit(1)
-            Spacer()
-            if leg.priceCents > 0 {
-                Text("\(leg.priceCents)¢").font(Theme.num(12, .semibold)).foregroundStyle(Theme.text)
-            }
-            if leg.qty > 0 {
-                Text("×\(NSDecimalNumber(decimal: leg.qty).intValue)")
-                    .font(Theme.num(11)).foregroundStyle(Theme.textTertiary)
-            }
-        }
-        .padding(.horizontal, 12).padding(.vertical, 9)
-        .background(RoundedRectangle(cornerRadius: 9).fill(Theme.surface))
-        .overlay(RoundedRectangle(cornerRadius: 9).stroke(Theme.border, lineWidth: 1))
     }
 }
