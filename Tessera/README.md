@@ -24,7 +24,19 @@ A standard windowed Dock app with a Mac-native sidebar:
 - **Alerts & Triggers** — price/probability alerts with native notifications, and
   automated triggers that can place orders when conditions are met.
 
-## Build & run
+## Install
+
+**No coding required.** Tessera is a signed, notarized macOS app:
+
+1. **[⬇️ Download the latest `Tessera.dmg`](https://github.com/IvanKuria/tessera/releases/latest)** from the Releases page.
+2. **Open** the `.dmg` and **drag Tessera into Applications**.
+3. **Launch** it — it's notarized, so it opens normally (no security workaround). Requires **macOS 14 (Sonoma)+**.
+
+Browsing live markets needs no account. Portfolio and trading are opt-in: click
+**Connect Kalshi key** in the sidebar and paste your own Kalshi API key — it's
+stored only in the macOS Keychain and goes nowhere except Kalshi.
+
+## Build from source
 
 Requires macOS 14+, Xcode 16+ (Swift 6), and [xcodegen](https://github.com/yonaskolb/XcodeGen)
 (`brew install xcodegen`).
