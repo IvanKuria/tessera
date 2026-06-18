@@ -14,24 +14,36 @@ A typed Swift SDK for the [Kalshi](https://kalshi.com) trade API (v2) — market
 
 ## Install
 
-Add the package to your `Package.swift`:
+KalshiKit currently lives inside the [`tessera`](https://github.com/ivankuria/tessera)
+monorepo (under `KalshiKit/`), so it isn't yet consumable via a remote
+`.package(url:)` — Swift Package Manager expects a package's `Package.swift` at the
+repository root. Until it's split into its own repo, use a **local checkout**:
+
+```sh
+git clone https://github.com/ivankuria/tessera.git
+```
+
+Then reference the package by path from your own `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ivankuria/KalshiKit.git", from: "0.1.0")
+    .package(path: "../tessera/KalshiKit")
+],
+targets: [
+    .target(
+        name: "YourApp",
+        dependencies: [.product(name: "KalshiKit", package: "KalshiKit")]
+    )
 ]
 ```
 
-…and add `KalshiKit` to your target's dependencies:
+Or in Xcode: **File ▸ Add Package Dependencies… ▸ Add Local…** and select the
+`tessera/KalshiKit` folder.
 
-```swift
-.target(
-    name: "YourApp",
-    dependencies: ["KalshiKit"]
-)
-```
-
-Or in Xcode: **File ▸ Add Package Dependencies…** and paste the repository URL.
+> **Want it as a standalone package?** Open an issue on the
+> [tessera repo](https://github.com/ivankuria/tessera/issues). Splitting KalshiKit
+> into its own repository (so `.package(url:)` works) is planned — it's already
+> dependency-free and self-contained.
 
 ## Quick start (keyless — market data)
 
