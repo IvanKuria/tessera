@@ -30,6 +30,7 @@ struct RootView: View {
     @State private var selection: Section? = .markets
     @State private var portfolioStore: PortfolioStore
     @State private var showOnboarding = false
+    @AppStorage("appAppearance") private var appearanceRaw = AppAppearance.system.rawValue
 
     init(store: WatchlistStore, account: AccountStore, alerts: AlertEngine, triggers: TriggerEngine) {
         self.store = store
@@ -65,12 +66,47 @@ struct RootView: View {
             .listStyle(.sidebar)
 
             Divider()
-            accountFooter.padding(12)
+            VStack(spacing: 10) {
+                accountFooter
+                appearancePicker
+            }
+            .padding(12)
         }
         .safeAreaInset(edge: .top) {
             HStack { Wordmark(); Spacer() }
                 .padding(.horizontal, 14).padding(.top, 10).padding(.bottom, 4)
         }
+    }
+
+    /// Light / Dark / System appearance control. Same segmented style as the
+    /// Line/Candles chart toggle (subtle track + lifted selected thumb, all Theme
+    /// colors). Writes the shared `appAppearance` preference that `TesseraApp`
+    /// reads to drive `preferredColorScheme`.
+    private var appearancePicker: some View {
+        HStack(spacing: 0) {
+            ForEach(AppAppearance.allCases) { option in
+                appearanceButton(option)
+            }
+        }
+        .padding(2)
+        .background(RoundedRectangle(cornerRadius: 9).fill(Theme.subtle))
+    }
+
+    private func appearanceButton(_ option: AppAppearance) -> some View {
+        let selected = appearanceRaw == option.rawValue
+        return Button {
+            withAnimation(.easeOut(duration: 0.15)) { appearanceRaw = option.rawValue }
+        } label: {
+            Image(systemName: option.symbol)
+                .font(.system(size: 12, weight: selected ? .semibold : .regular))
+                .foregroundStyle(selected ? Theme.text : Theme.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 5)
+                .background(RoundedRectangle(cornerRadius: 7).fill(selected ? Theme.surface : Color.clear))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(option.label)
     }
 
     @ViewBuilder private var accountFooter: some View {
