@@ -32,7 +32,10 @@ struct ArbSettings: Sendable, Equatable {
     /// Bounded fan-out: at most this many venues' books fetched concurrently.
     var maxConcurrentFetches: Int = 6
     /// Minimum match confidence (0…1) for a pair to be confirmed.
-    var minConfidence: Decimal = Decimal(string: "0.45")!
+    // Conservative: a simple title-embedding matcher gives ~0.47 to coincidental
+    // token overlap, so anything below this is noise. Genuine high-overlap pairs
+    // score higher. Better honestly empty than showing false "arbitrage".
+    var minConfidence: Decimal = Decimal(string: "0.55")!
     /// Minimum net-of-fee edge per contract (cents) for an opportunity to surface.
     var minNetEdgeCents: Int = 1
     /// Max displayed rows.

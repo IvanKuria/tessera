@@ -60,15 +60,31 @@ public enum EventMatcher {
         config: MatchConfig = MatchConfig()
     ) -> [MatchedPair] {
         let embedding = NLEmbedding.sentenceEmbedding(for: .english)
+        // Index Polymarket candidates by topic bucket so each Kalshi market only
+        // compares against SAME-topic markets. Without this, the K×P embedding scan
+        // (NLEmbedding.distance is ~ms each) is pathologically slow at real scale.
+        var byBucket: [String: [VenueMarketRef]] = [:]
+        for p in polymarket where p.isBinary && p.pmYesTokenID != nil && p.pmNoTokenID != nil {
+            guard let bucket = topicBucket(p.title) else { continue }
+            byBucket[bucket, default: []].append(p)
+        }
+        let jaccardGate = Decimal(string: "0.08")!
         var pairs: [MatchedPair] = []
 
         for k in kalshi where k.isBinary {
+            // Skip markets whose titles don't hit any topic keyword — necessary to
+            // keep the embedding scan bounded; the keyword set is broad.
+            guard let bucket = topicBucket(k.title), let candidates = byBucket[bucket] else { continue }
             var best: MatchedPair?
             var bestScore = Decimal(-1)
 
-            for p in polymarket where p.isBinary {
-                guard compatible(k, p, config: config) else { continue }
-                guard let yesToken = p.pmYesTokenID, let noToken = p.pmNoTokenID else { continue }
+            for p in candidates {
+                if let da = k.closeDate, let db = p.closeDate,
+                   abs(da.timeIntervalSince(db)) > config.closeDateWindow { continue }
+                // Cheap lexical pre-gate: only run the expensive embedding distance
+                // on pairs that already share some tokens.
+                let jac = jaccard(k.title, p.title)
+                guard jac >= jaccardGate else { continue }
 
                 let score = confidence(k, p, embedding: embedding, config: config)
                 guard score >= config.minConfidence else { continue }
@@ -78,8 +94,8 @@ public enum EventMatcher {
                     best = MatchedPair(
                         kalshi: k,
                         polymarket: p,
-                        pmYesTokenID: yesToken,
-                        pmNoTokenID: noToken,
+                        pmYesTokenID: p.pmYesTokenID!,
+                        pmNoTokenID: p.pmNoTokenID!,
                         confidence: score,
                         resolutionMismatch: resolutionMismatch(k, p, similarity: score, config: config),
                         kalshiRules: k.resolutionText,
@@ -94,7 +110,7 @@ public enum EventMatcher {
 
     // MARK: Pruning
 
-    static func compatible(_ a: VenueMarketRef, _ b: VenueMarketRef, config: MatchConfig) -> Bool {
+    public static func compatible(_ a: VenueMarketRef, _ b: VenueMarketRef, config: MatchConfig) -> Bool {
         // Topic gate from TITLE keywords. Venue category taxonomies don't align
         // across Kalshi and Polymarket (Polymarket has no real category), so a
         // category-equality prune rejects everything. Instead bucket each title by

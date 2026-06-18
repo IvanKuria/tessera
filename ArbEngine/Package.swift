@@ -19,6 +19,14 @@ let package = Package(
                 .product(name: "PolymarketKit", package: "PolymarketKit"),
             ]
         ),
+        .executableTarget(
+            name: "arb-smoke",
+            dependencies: [
+                "ArbEngine",
+                .product(name: "KalshiKit", package: "KalshiKit"),
+                .product(name: "PolymarketKit", package: "PolymarketKit"),
+            ]
+        ),
         .testTarget(
             name: "ArbEngineTests",
             dependencies: ["ArbEngine"]
