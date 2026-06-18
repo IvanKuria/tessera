@@ -76,13 +76,13 @@ struct CategoryTab: View {
     let action: () -> Void
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: 7) {
                 Text(title)
-                    .font(Theme.ui(13.5, selected ? .semibold : .regular))
+                    .font(Theme.ui(15, selected ? .semibold : .regular))
                     .foregroundStyle(selected ? Theme.text : Theme.textTertiary)
                 Capsule()
                     .fill(selected ? Theme.text : .clear)
-                    .frame(height: 2)
+                    .frame(height: 2.5)
             }
         }
         .buttonStyle(.plain)
@@ -96,11 +96,11 @@ struct LiveDot: View {
         HStack(spacing: 5) {
             ZStack {
                 Circle().fill(Theme.yes.opacity(0.30))
-                    .frame(width: 11, height: 11)
+                    .frame(width: 12, height: 12)
                     .scaleEffect(pulse ? 1.7 : 0.7).opacity(pulse ? 0 : 0.9)
-                Circle().fill(Theme.yes).frame(width: 6, height: 6)
+                Circle().fill(Theme.yes).frame(width: 7, height: 7)
             }
-            Text("LIVE").font(Theme.ui(10, .bold)).tracking(1.2).foregroundStyle(Theme.yes)
+            Text("LIVE").font(Theme.ui(11, .bold)).tracking(1.2).foregroundStyle(Theme.yes)
         }
         .onAppear { withAnimation(.easeOut(duration: 1.4).repeatForever(autoreverses: false)) { pulse = true } }
     }
@@ -109,12 +109,12 @@ struct LiveDot: View {
 /// The Tessera wordmark.
 struct Wordmark: View {
     var body: some View {
-        HStack(spacing: 7) {
+        HStack(spacing: 8) {
             Image(systemName: "square.grid.2x2.fill")
-                .font(.system(size: 14, weight: .bold))
+                .font(.system(size: 17, weight: .bold))
                 .foregroundStyle(Theme.yes)
             Text("Tessera")
-                .font(Theme.condensed(20, .semibold))
+                .font(Theme.condensed(24, .semibold))
                 .foregroundStyle(Theme.text)
         }
     }

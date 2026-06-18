@@ -59,14 +59,14 @@ struct DashboardView: View {
         HStack(spacing: 12) {
             Wordmark()
             Text("for Kalshi · unofficial")
-                .font(Theme.ui(11)).foregroundStyle(Theme.textTertiary)
+                .font(Theme.ui(12.5)).foregroundStyle(Theme.textTertiary)
             Spacer()
             LiveDot()
             Text("\(store.events.count) markets")
-                .font(Theme.num(11)).foregroundStyle(Theme.textSecondary)
+                .font(Theme.num(12.5)).foregroundStyle(Theme.textSecondary)
             Button { Task { await store.refresh() } } label: {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
                     .rotationEffect(.degrees(store.isLoading ? 360 : 0))
                     .animation(store.isLoading ? .linear(duration: 0.8).repeatForever(autoreverses: false) : .default,
@@ -74,14 +74,14 @@ struct DashboardView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 20).padding(.vertical, 14)
+        .padding(.horizontal, 20).padding(.vertical, 16)
     }
 
     // MARK: Category tabs
 
     private var categoryBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 20) {
+            HStack(spacing: 22) {
                 ForEach(store.categories, id: \.self) { cat in
                     CategoryTab(title: cat, selected: cat == category) {
                         withAnimation(.easeOut(duration: 0.18)) { category = cat }
@@ -90,7 +90,7 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 20)
         }
-        .frame(height: 40)
+        .frame(height: 48)
     }
 
     // MARK: Feed
