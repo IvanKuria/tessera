@@ -60,24 +60,30 @@ struct CandleChartView: View {
             .onEnded { _ in pinchBase = nil }
     }
 
-    /// Candles with the latest bar updated to the live price (forming candle), so
-    /// the most recent close/high/low tick in real time. Closed bars are untouched.
-    private var displayCandles: [CandleVM] {
-        guard let live = liveLastCents, let last = candles.last else { return candles }
+    /// The latest bar re-priced to the live tick (O(1)); nil when there's no live
+    /// price. We never rebuild the whole candle array — that allocates on every
+    /// hover move and tick. Instead, only the last bar is substituted in place.
+    private var formedLast: CandleVM? {
+        guard let live = liveLastCents, let last = candles.last else { return nil }
         let c = Double(live)
-        let formed = CandleVM(
+        return CandleVM(
             id: last.id, date: last.date, open: last.open,
             high: max(last.high, c), low: min(last.low, c), close: c,
             volume: last.volume, yesBid: last.yesBid, yesAsk: last.yesAsk
         )
-        return candles.dropLast() + [formed]
     }
 
-    /// Candles inside the current zoom window (or all).
+    /// The live-adjusted version of the latest candle, else the candle unchanged.
+    private func display(_ c: CandleVM) -> CandleVM {
+        (c.id == candles.last?.id ? formedLast : nil) ?? c
+    }
+
+    /// Candles inside the current zoom window (or all). Backed by the stored array
+    /// (no copy when unzoomed) — the live tip is overlaid at render time instead.
     private var visibleCandles: [CandleVM] {
-        guard let z = zoomRange else { return displayCandles }
-        let inside = displayCandles.filter { z.contains($0.id) }
-        return inside.count >= 2 ? inside : displayCandles
+        guard let z = zoomRange else { return candles }
+        let inside = candles.filter { z.contains($0.id) }
+        return inside.count >= 2 ? inside : candles
     }
 
     /// Simple moving average period, scaled to the candle count.
@@ -85,22 +91,24 @@ struct CandleChartView: View {
 
     /// SMA of closes, one point per candle once the window fills.
     private var movingAverage: [(id: Int, value: Double)] {
-        let series = displayCandles
-        guard series.count >= maPeriod else { return [] }
-        let closes = series.map(\.close)
+        guard candles.count >= maPeriod else { return [] }
+        var closes = candles.map(\.close)
+        if let f = formedLast { closes[closes.count - 1] = f.close }
         var out: [(Int, Double)] = []
-        for i in (maPeriod - 1)..<series.count {
+        for i in (maPeriod - 1)..<candles.count {
             let avg = closes[(i - maPeriod + 1)...i].reduce(0, +) / Double(maPeriod)
-            out.append((series[i].id, avg))
+            out.append((candles[i].id, avg))
         }
         return out
     }
 
     // MARK: - Derived (precomputed, never per-mark)
 
-    /// Fast O(1) lookup for the hovered candle.
+    /// Fast O(1) lookup for the hovered candle (latest bar shows the live tip).
     private var byID: [Int: CandleVM] {
-        Dictionary(uniqueKeysWithValues: displayCandles.map { ($0.id, $0) })
+        var d = Dictionary(uniqueKeysWithValues: candles.map { ($0.id, $0) })
+        if let f = formedLast { d[f.id] = f }
+        return d
     }
 
     private var selectedCandle: CandleVM? {
@@ -179,8 +187,8 @@ struct CandleChartView: View {
 
     /// Current price + change over the visible window.
     private var priceReadout: some View {
-        let current = displayCandles.last?.close ?? 0
-        let base = displayCandles.first?.open ?? current
+        let current = (formedLast ?? candles.last)?.close ?? 0
+        let base = candles.first?.open ?? current
         let change = current - base
         let up = change >= 0
         return HStack(alignment: .firstTextBaseline, spacing: 9) {
@@ -285,7 +293,7 @@ struct CandleChartView: View {
         Chart {
             // Spread band first, so it sits behind the candles.
             if showSpread {
-                ForEach(displayCandles) { c in
+                ForEach(candles) { c in
                     if let bid = c.yesBid, let ask = c.yesAsk {
                         AreaMark(
                             x: .value("Bar", c.id),
@@ -298,7 +306,8 @@ struct CandleChartView: View {
                 }
             }
 
-            ForEach(displayCandles) { c in
+            ForEach(candles) { c0 in
+                let c = display(c0)
                 let color = c.isUp ? Theme.yes : Theme.no
 
                 // Wick.
@@ -337,8 +346,8 @@ struct CandleChartView: View {
             }
 
             // Always-on last-price line + tag at the latest close (live when connected).
-            if let last = displayCandles.last {
-                let up = (displayCandles.first.map { last.close >= $0.open } ?? true)
+            if let last = formedLast ?? candles.last {
+                let up = (candles.first.map { last.close >= $0.open } ?? true)
                 RuleMark(y: .value("Last", last.close))
                     .foregroundStyle((up ? Theme.yes : Theme.no).opacity(0.45))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [2, 3]))
@@ -399,7 +408,7 @@ struct CandleChartView: View {
 
     private var volumeChart: some View {
         Chart {
-            ForEach(displayCandles) { c in
+            ForEach(candles) { c in
                 BarMark(
                     x: .value("Bar", c.id),
                     y: .value("Volume", min(c.volume, volumeYMax)),
