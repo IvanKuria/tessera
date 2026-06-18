@@ -101,14 +101,13 @@ struct ScannerView: View {
 
             Spacer()
 
-            // Liveness + freshness readout.
+            // Liveness + freshness readout — honestly reflects the live socket.
             HStack(spacing: 8) {
                 if store.isScanning {
                     ProgressView().controlSize(.small)
                     Text(phaseLabel).font(Theme.ui(11)).foregroundStyle(Theme.textSecondary)
                 } else if let last = store.lastScan {
-                    LiveDot()
-                    Text(freshnessText(last)).font(Theme.num(11)).foregroundStyle(Theme.textSecondary)
+                    livenessBadge(last: last)
                 } else {
                     Text("starting…").font(Theme.ui(11)).foregroundStyle(Theme.textTertiary)
                 }
@@ -165,6 +164,29 @@ struct ScannerView: View {
         if secs < 90 { return "updated \(secs)s ago" }
         let mins = secs / 60
         return "updated \(mins)m ago"
+    }
+
+    /// Header status that honestly reflects the live socket. When there's a watch
+    /// set we show Live / Reconnecting / Offline; with nothing surfaced there's no
+    /// socket to open, so we just show the REST snapshot freshness (no false alarm).
+    @ViewBuilder private func livenessBadge(last: Date) -> some View {
+        let hasOpps = !store.locks.isEmpty || !store.edges.isEmpty
+        switch store.connection {
+        case .connected:
+            LiveDot()
+            Text("Live · \(freshnessText(last))").font(Theme.num(11)).foregroundStyle(Theme.textSecondary)
+        case .connecting:
+            Circle().fill(Color(hex: 0xF59F00)).frame(width: 7, height: 7)
+            Text("Reconnecting…").font(Theme.num(11)).foregroundStyle(Theme.textSecondary)
+        case .disconnected:
+            if hasOpps {
+                Circle().fill(Color(hex: 0xF59F00)).frame(width: 7, height: 7)
+                Text("Offline · \(freshnessText(last))").font(Theme.num(11)).foregroundStyle(Theme.textSecondary)
+            } else {
+                Circle().fill(Theme.textTertiary).frame(width: 7, height: 7)
+                Text(freshnessText(last)).font(Theme.num(11)).foregroundStyle(Theme.textSecondary)
+            }
+        }
     }
 
     // MARK: - Content
