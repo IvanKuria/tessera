@@ -4,7 +4,7 @@
 
 A typed Swift SDK for the [Kalshi](https://kalshi.com) trade API (v2) — market data, websocket, and trading. Built for **Swift 6** strict concurrency; the client is an `actor`.
 
-> **Status: early work in progress.** Public API may change before `1.0`.
+> **Status: v1.0.0.** First public release, shipped alongside the Tessera app.
 
 ## Requirements
 
@@ -18,7 +18,7 @@ Add the package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/IvanKuria/KalshiKit.git", from: "0.1.0")
+    .package(url: "https://github.com/IvanKuria/KalshiKit.git", from: "1.0.0")
 ],
 targets: [
     .target(
@@ -90,8 +90,24 @@ Secure Enclave or a custom Keychain access policy).
 | Area | Status | Selected methods |
 | --- | --- | --- |
 | **Market data** | ✅ keyless | `series`, `events`, `markets`, `market(_:)`, `trades`, `candlesticks`, `exchangeStatus`, `orderbook` |
-| **WebSocket** | 🚧 planned / in progress | live tickers & orderbook streaming |
+| **WebSocket** | ✅ keyless / keyed | live ticker & orderbook streaming |
 | **Trading** | 🔑 requires your key | `balance`, `positions`, `orders`, `createOrder`, `cancelOrder` |
+| **Scanner engine** | ✅ pure | `DetectionEngine`, detectors, `Opportunity` model, fee + VWAP/depth math |
+
+### Scanner detection engine
+
+`Sources/KalshiKit/Scanner/` is a **pure, reusable mispricing-detection engine** —
+no I/O, all money in `Decimal`, fully unit-tested. Given a value-type market/orderbook
+snapshot it returns ranked `Opportunity` values across two lanes — **Locks** (provable
+multi-outcome arbitrage) and **Edges** (scored ladder-monotonicity / spread / stale
+signals) — with **net-of-fee, depth-aware (Level-2 VWAP walk), annualized** economics.
+
+```swift
+let opportunities = DetectionEngine.scan(snapshot)   // [Opportunity], ranked
+```
+
+It is the same engine that powers Tessera's Scanner. It computes economics only; it
+does **not** place orders, give advice, or guarantee profit (execution is non-atomic).
 
 ### Public surface
 
@@ -101,6 +117,7 @@ Secure Enclave or a custom Keychain access policy).
 - `KalshiSigner` — request signer built from credentials
 - `RequestSigning` — protocol for custom signers
 - Model types — `Series`, `Event`, `Market`, `Trade`, `Candlestick`, `Orderbook`, and portfolio types
+- `DetectionEngine` + `Opportunity` — the pure Scanner mispricing-detection engine (see above)
 
 ## License
 

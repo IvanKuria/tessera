@@ -13,7 +13,7 @@ Browse live markets and implied odds, drill into price history and order books, 
 [![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
 ![Platform: macOS 14+](https://img.shields.io/badge/platform-macOS%2014%2B-blue.svg)
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange.svg)
-![Status: WIP](https://img.shields.io/badge/status-early%20WIP-yellow.svg)
+![Version: v1.0.0](https://img.shields.io/badge/version-v1.0.0-brightgreen.svg)
 
 </div>
 
@@ -27,6 +27,9 @@ Browse live markets and implied odds, drill into price history and order books, 
 | --- | --- |
 | ![Markets dashboard](docs/screenshots/dashboard.png) | ![Market detail with price history and outcomes](docs/screenshots/market-detail.png) |
 | Live markets across categories with implied probabilities. | Multi-outcome price history, volume, and per-outcome Yes/No pricing. |
+| Scanner | Candlestick chart |
+| ![Scanner showing Locks and Edges lanes with net-of-fee edges](docs/screenshots/scanner.png) | ![Candlestick chart with volume panel, moving average, and crosshair](docs/screenshots/candles.png) |
+| Within-Kalshi mispricing scanner: provable Locks and scored Edges, net of fees and orderbook depth. | Candles + volume, moving average, spread band, log scale, and a hover OHLC crosshair on market detail. |
 
 ## What this is
 
@@ -34,8 +37,8 @@ This repository ships **two deliverables**:
 
 | Deliverable | What it is |
 | --- | --- |
-| **macOS app** (*Tessera*) | A native, windowed desktop client: a markets dashboard, market detail with live price charts and order books, a portfolio view, price **alerts**, and automated **triggers**. Trade execution is opt-in with your own API key. |
-| **`KalshiKit`** | An open-source Swift SDK (SwiftPM library) for the Kalshi trade API — market data, websocket, and trading. Reusable on its own — see [`KalshiKit/README.md`](KalshiKit/README.md). |
+| **macOS app** (*Tessera*) | A native, windowed desktop client: a markets dashboard, market detail with live price/candlestick charts and order books, a within-Kalshi mispricing **Scanner**, a portfolio view, price **alerts**, and automated **triggers**. Dark mode throughout. Trade execution is opt-in with your own API key. |
+| **`KalshiKit`** | An open-source Swift SDK (SwiftPM library) for the Kalshi trade API — market data, websocket, and trading — plus a pure, reusable **Scanner detection engine** (Opportunity model, detectors, fee + VWAP/depth math). Usable on its own — see [`KalshiKit/README.md`](KalshiKit/README.md). |
 
 Both are **free, non-commercial, portfolio projects** released under the **MIT License**.
 
@@ -51,10 +54,24 @@ This is a learning / portfolio project, built in the open.
 
 - **Markets dashboard** — browse series, events, and markets by category with live implied probabilities and prices, cached to disk for instant cold-launch render.
 - **Market detail** — multi-outcome price history (1H / 1D / 1W / 1M / All), 24h volume, open interest, order book, recent trades, and per-outcome Yes/No pricing.
+- **Candlestick charts** — a full candlestick suite on market detail: candles + a volume panel, a moving average, a bid/ask spread band, log scale, pinch-to-zoom-at-cursor, a hover crosshair with an OHLC tooltip, a live last-price tick, and set-an-alert-from-the-chart. Toggle between a Line and a Candles view.
+- **Scanner** — a within-Kalshi arbitrage and mispricing scanner that proves every opportunity survives **fees and orderbook depth** before it shows it. Two honestly-labeled lanes: **Locks** (provable multi-outcome arbitrage) and **Edges** (scored, not-guaranteed signals). All math is net-of-fee, depth-aware, and annualized against a real hurdle. Real arbitrage is rare, so an empty scanner is the normal, honest state — not a bug. (See [Scanner](#scanner) below.)
 - **Portfolio** — balance, open positions, resting orders, recent fills, and settled markets (requires your API key).
 - **Alerts** — price/probability thresholds with native notifications.
 - **Triggers** — automated rules that can place orders when conditions are met (opt-in, your key).
 - **Bring-your-own-key trading** — keys live only in the macOS Keychain and go nowhere except directly to Kalshi.
+- **Dark mode** — the whole app follows the system appearance (light/dark).
+
+### Scanner
+
+The Scanner continuously hunts the Kalshi exchange for mispricing and shows only the **net-of-fee, depth-aware, annualized** truth — never a gross price gap. **Honesty is the point**, so its design has hard rails:
+
+- **Locks** are *provable* arbitrage: mutually-exclusive multi-outcome events where buying every outcome costs less than the guaranteed $1 payout, after fees and after walking the real Level-2 book for achievable size.
+- **Edges** are *scored, not guaranteed* signals: ladder-monotonicity violations within a series, wide spreads, and stale quotes. They are clearly labeled as estimates, not certainties.
+- Every multi-leg opportunity surfaces its **non-atomic legging risk** and worst-case loss — Kalshi has no atomic multi-leg fill, so nothing is ever "guaranteed" at execution.
+- A Simple/Pro mode, a dutching calculator clamped to fillable depth, a bound-legs execution panel (gated behind a mandatory legging-risk warning), forward-only **paper trading** (no backtested "you would've made $X"), Watching / Paper P&L / Digest tabs, and opt-in native alerts.
+
+It is **informational only, not financial advice, and not a guarantee of profit.** You are responsible for your own trades. See [`DISCLAIMER.md`](DISCLAIMER.md).
 
 ## Quick start
 

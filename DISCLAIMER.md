@@ -14,6 +14,10 @@ This project is **not** affiliated with, authorized, endorsed by, sponsored by, 
 
 Any odds, prices, probabilities, balances, or other data displayed are provided for **informational purposes only** and may be **delayed, incomplete, cached, or incorrect**. Nothing produced by this software is financial, investment, legal, accounting, or tax advice, or a recommendation to buy, sell, or hold any contract. Prediction-market trading carries risk of loss.
 
+## Scanner signals are informational — not advice and not guaranteed
+
+The Scanner surfaces possible arbitrage ("Locks") and scored mispricing signals ("Edges"). These are **informational only**: they are **not** financial advice, **not** a recommendation to trade, and **not** a guarantee of profit. Even where the settlement math of a "Lock" is provable, **execution is not** — Kalshi has no atomic multi-leg fill, so prices can move, legs can fill partially or not at all, and an opportunity can disappear or turn into a loss between when it is shown and when you act. Estimates depend on data that may be stale, and on assumptions about fees, orderbook depth, and slippage that may not hold. Any paper-trading figures are forward-only, accrued from now, and use **no real money**; they do not predict real results. **Fees, slippage, legging risk, capital lock-up, and settlement outcomes are entirely your own.** You are solely responsible for every trade you choose to place, and you should verify everything directly on Kalshi before acting.
+
 ## AS IS — no warranty
 
 The software is provided **"AS IS", without warranty of any kind**, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement. You use it entirely at your own risk. The authors are not liable for any losses, damages, missed trades, erroneous orders, or other harm arising from its use. See the [LICENSE](LICENSE) (MIT).
