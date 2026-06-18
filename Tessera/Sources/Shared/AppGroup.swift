@@ -42,6 +42,16 @@ enum AppGroup {
         containerURL.appending(path: "alert-rules.json")
     }
 
+    /// File the scanner persists its user settings to.
+    static var scannerSettingsURL: URL {
+        containerURL.appending(path: "scanner-settings.json")
+    }
+
+    /// File the scanner's forward paper ledger persists to.
+    static var scannerPaperURL: URL {
+        containerURL.appending(path: "scanner-paper.json")
+    }
+
     /// Reads and decodes a Codable value from a shared file, or `nil` if absent
     /// or unreadable. Never throws — shared-state reads should degrade quietly.
     static func read<T: Decodable>(_ type: T.Type, from url: URL) -> T? {
