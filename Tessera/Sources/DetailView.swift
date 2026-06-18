@@ -20,6 +20,11 @@ struct DetailView: View {
     @State private var alertAbove = true
     @State private var alertAdded = false
 
+    /// The trade ticket is presented BY this view (not bubbled to the dashboard).
+    /// Presenting from the pushed detail's own context fixes the sheet failing to
+    /// appear until you navigate back (nested NavigationStack-in-SplitView quirk).
+    @State private var ticketTarget: TradeTarget?
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -44,6 +49,18 @@ struct DetailView: View {
         .onChange(of: store.timeframe) { _, _ in
             Task { await store.loadChartSeries(); await store.loadFocusedCandles() }
         }
+        .sheet(item: $ticketTarget) { target in
+            TradeTicketView(account: account,
+                            marketTicker: target.marketTicker,
+                            eventTitle: target.eventTitle,
+                            initialSide: target.side)
+                .frame(width: 380, height: 580)
+        }
+    }
+
+    /// Open the trade ticket for a market from this detail view.
+    private func buy(_ marketTicker: String, _ side: OrderSide) {
+        ticketTarget = TradeTarget(marketTicker: marketTicker, eventTitle: event.title, side: side)
     }
 
     /// Toggle which outcome is emphasized on the chart (and focus its book/trades).
@@ -180,9 +197,9 @@ struct DetailView: View {
             }
             .buttonStyle(.plain)
 
-            QuickBuyButton(side: .yes, cents: outcome.yesCents) { onBuy(outcome.id, .yes) }
+            QuickBuyButton(side: .yes, cents: outcome.yesCents) { buy(outcome.id, .yes) }
                 .frame(width: 96)
-            QuickBuyButton(side: .no, cents: outcome.noCents) { onBuy(outcome.id, .no) }
+            QuickBuyButton(side: .no, cents: outcome.noCents) { buy(outcome.id, .no) }
                 .frame(width: 96)
         }
         .padding(.horizontal, 18)
@@ -339,9 +356,9 @@ struct DetailView: View {
 
     private func buyRow(marketTicker: String, yesCents: Int?, noCents: Int?) -> some View {
         HStack(spacing: 12) {
-            QuickBuyButton(side: .yes, cents: yesCents) { onBuy(marketTicker, .yes) }
+            QuickBuyButton(side: .yes, cents: yesCents) { buy(marketTicker, .yes) }
                 .scaleEffect(1.0)
-            QuickBuyButton(side: .no, cents: noCents) { onBuy(marketTicker, .no) }
+            QuickBuyButton(side: .no, cents: noCents) { buy(marketTicker, .no) }
         }
         .font(Theme.ui(16, .semibold))
     }
