@@ -50,6 +50,21 @@ struct PortfolioView: View {
                     .foregroundStyle(Theme.text)
                 Spacer()
                 Button {
+                    KalshiLinks.open(KalshiLinks.manageFunds)
+                } label: {
+                    HStack(spacing: 5) {
+                        Text("Manage funds").font(Theme.ui(12, .semibold))
+                        Image(systemName: "arrow.up.right").font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundStyle(Theme.textSecondary)
+                    .padding(.horizontal, 12)
+                    .frame(height: 30)
+                    .background(Capsule().fill(Theme.subtle))
+                }
+                .buttonStyle(.plain)
+                .help("Deposit or withdraw on Kalshi — opens kalshi.com in your browser")
+
+                Button {
                     Task { await store.load() }
                 } label: {
                     Image(systemName: "arrow.clockwise")

@@ -77,6 +77,12 @@ struct RootView: View {
         if account.isSignedIn {
             Menu {
                 Button("Refresh balance") { Task { await account.refreshAccount() } }
+                Button {
+                    KalshiLinks.open(KalshiLinks.manageFunds)
+                } label: {
+                    Label("Deposit / withdraw on Kalshi ↗", systemImage: "arrow.up.right.square")
+                }
+                Divider()
                 if account.env == .demo {
                     Button("Switch to Production (real money)") { account.setEnv(.production) }
                 } else {
