@@ -6,7 +6,7 @@ public enum OpportunityKind: Codable, Sendable, Hashable {
     case lock(LockSubtype)
     case edge(EdgeSubtype)
     public enum LockSubtype: String, Codable, Sendable, Hashable { case multiOutcomeUnderround, multiOutcomeOverround }
-    public enum EdgeSubtype: String, Codable, Sendable, Hashable { case ladderMonotonicity, wideSpread, staleQuote }
+    public enum EdgeSubtype: String, Codable, Sendable, Hashable { case ladderMonotonicity, wideSpread, staleQuote, crossVenueArb }
 
     public var lane: OpportunityLane {
         switch self { case .lock: return .lock; case .edge: return .edge }
@@ -32,6 +32,17 @@ public enum ScannerWarning: Codable, Sendable, Hashable {
     case settlementDiscretion
     case bookIntegrity(yesPlusNoCents: Decimal)
     case thinDepth(available: Decimal)
+    /// Cross-venue settlement risk: the two legs settle on independent exchanges
+    /// (Kalshi & Polymarket) against potentially different resolution sources, so
+    /// the "lock" can break if the venues disagree. Always attached to a
+    /// cross-venue opportunity.
+    case crossVenueSettlement
+    /// The matched markets both have resolution text but the matcher judged them
+    /// to potentially resolve against different criteria/sources.
+    case resolutionMismatch
+    /// The event match backing this opportunity scored below the comfort
+    /// threshold; the legs may not be the same underlying event.
+    case lowMatchConfidence(score: Decimal)
 }
 
 /// Which exchange a leg trades on. Optional on `Leg` (defaults to nil = Kalshi)
