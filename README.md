@@ -10,10 +10,11 @@
 
 Browse live markets and implied odds, drill into price history and order books, set price alerts, and — opt-in, with your own API key — place trades. `KalshiKit` is the standalone Swift SDK underneath, usable on its own.
 
+[![Download for macOS](https://img.shields.io/github/v/release/IvanKuria/tessera?label=Download%20for%20macOS&color=2ea44f&logo=apple)](https://github.com/IvanKuria/tessera/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
 ![Platform: macOS 14+](https://img.shields.io/badge/platform-macOS%2014%2B-blue.svg)
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange.svg)
-![Version: v1.0.0](https://img.shields.io/badge/version-v1.0.0-brightgreen.svg)
+[![Downloads](https://img.shields.io/github/downloads/IvanKuria/tessera/total?label=downloads&color=blue)](https://github.com/IvanKuria/tessera/releases)
 
 </div>
 
@@ -73,9 +74,20 @@ The Scanner continuously hunts the Kalshi exchange for mispricing and shows only
 
 It is **informational only, not financial advice, and not a guarantee of profit.** You are responsible for your own trades. See [`DISCLAIMER.md`](DISCLAIMER.md).
 
-## Quick start
+## Install
 
-Build the app:
+**No coding required.** Tessera is a signed, notarized macOS app:
+
+1. **[⬇️ Download the latest `Tessera.dmg`](https://github.com/IvanKuria/tessera/releases/latest)** from the Releases page.
+2. **Open** the downloaded `.dmg`, then **drag Tessera into your Applications folder**.
+3. **Launch Tessera** from Applications (or Launchpad / Spotlight). It's notarized by Apple, so it opens normally — no security workaround needed.
+
+That's it. Requires **macOS 14 (Sonoma) or later**.
+
+- **Browsing needs no account.** Live market data and odds work the moment you open the app.
+- **Portfolio & trading are opt-in.** Click **Connect Kalshi key** in the sidebar and paste your own Kalshi API key (key id + RSA private key). It's stored **only in your macOS Keychain** and is never sent anywhere except directly to Kalshi. You can get a key from your Kalshi account settings.
+
+## Build from source (developers)
 
 ```sh
 brew install xcodegen                 # one-time, if not installed
@@ -85,9 +97,9 @@ open Tessera.xcodeproj                 # then Run (⌘R), or build from the CLI:
 xcodebuild -scheme Tessera -configuration Debug CODE_SIGNING_ALLOWED=NO build
 ```
 
-The app launches as a standard windowed Dock app. Market data is read-only and needs **no credentials**; connect a key only for portfolio and trading. See [`Tessera/README.md`](Tessera/README.md) for architecture.
+The app launches as a standard windowed Dock app. See [`Tessera/README.md`](Tessera/README.md) for architecture.
 
-Use the SDK on its own:
+### Use the SDK on its own
 
 ```swift
 import KalshiKit
