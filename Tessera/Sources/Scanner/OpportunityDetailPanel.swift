@@ -195,6 +195,12 @@ struct BoundLegsGroup: View {
                 .font(Theme.ui(9.5, .bold))
                 .foregroundStyle(leg.side == .yes ? Theme.yes : Theme.no)
 
+            // Venue badge — only for cross-venue arb legs (venue set); the
+            // single-venue Scanner leaves `venue == nil` so nothing renders.
+            if let venue = leg.venue {
+                VenueBadge(venue: venue)
+            }
+
             // Depth status: ✓ or ⚠ thin (always paired with text).
             HStack(spacing: 2) {
                 Image(systemName: thin ? "exclamationmark.triangle.fill" : "checkmark")
@@ -312,6 +318,8 @@ struct WhyMispricedExplainer: View {
             return "The gap between the best buy and sell price is unusually wide. That's a signal the quote may be stale or lightly traded — worth a look, not a sized trade."
         case .edge(.staleQuote):
             return "This quote hasn't moved in a while. It may be lagging the true market — a signal to watch, not an arbitrage."
+        case .edge(.crossVenueArb):
+            return "The same real-world event is priced differently on Kalshi and Polymarket: buying YES on the cheaper venue and NO on the other covers both outcomes for less than the \u{0024}1 payout, even after each venue's fees. The legs settle on independent exchanges, so verify the resolution rules match before trading."
         }
     }
 

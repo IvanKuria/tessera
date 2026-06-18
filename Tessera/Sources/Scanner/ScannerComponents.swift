@@ -113,6 +113,30 @@ struct WarningChip: View {
     }
 }
 
+// MARK: - Venue badge (cross-venue arbitrage)
+
+/// A tiny pill naming which exchange a leg trades on. Kalshi green / Polymarket
+/// violet. Only shown for cross-venue opportunities (where `Leg.venue` is set);
+/// single-venue Scanner legs leave `venue == nil` and render no badge, so the
+/// Scanner UI is unaffected. Color is always paired with the venue's name.
+struct VenueBadge: View {
+    let venue: Venue
+    /// Distinct violet for Polymarket; the brand green for Kalshi.
+    static let polymarketViolet = Color(hex: 0x8B5CF6)
+
+    private var tint: Color { venue == .kalshi ? Theme.yes : Self.polymarketViolet }
+    private var label: String { venue == .kalshi ? "Kalshi" : "Polymarket" }
+
+    var body: some View {
+        Text(label)
+            .font(Theme.ui(9, .bold)).tracking(0.4)
+            .foregroundStyle(tint)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(Capsule().fill(tint.opacity(0.14)))
+            .overlay(Capsule().stroke(tint.opacity(0.30), lineWidth: 0.5))
+    }
+}
+
 // MARK: - Lane / mode toggle
 
 /// The pill segmented toggle, identical in style to DetailView's Line/Candles
@@ -215,6 +239,7 @@ extension Opportunity {
         case .edge(.ladderMonotonicity):     return "Ladder slip"
         case .edge(.wideSpread):             return "Wide spread"
         case .edge(.staleQuote):             return "Stale quote"
+        case .edge(.crossVenueArb):          return "Cross-venue arb"
         }
     }
 
@@ -232,6 +257,10 @@ extension Opportunity {
             case .staleQuote:          return ("stale", false)
             case .feeKilledNearMid:    return ("fee-thin", false)
             case .bookIntegrity:       return nil
+            // Cross-venue (arbitrage) warnings.
+            case .crossVenueSettlement: return ("cross-venue settlement", false)
+            case .resolutionMismatch:   return ("resolution mismatch", false)
+            case .lowMatchConfidence:   return ("low match confidence", false)
             }
         }
     }
