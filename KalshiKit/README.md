@@ -14,20 +14,11 @@ A typed Swift SDK for the [Kalshi](https://kalshi.com) trade API (v2) — market
 
 ## Install
 
-KalshiKit currently lives inside the [`tessera`](https://github.com/ivankuria/tessera)
-monorepo (under `KalshiKit/`), so it isn't yet consumable via a remote
-`.package(url:)` — Swift Package Manager expects a package's `Package.swift` at the
-repository root. Until it's split into its own repo, use a **local checkout**:
-
-```sh
-git clone https://github.com/ivankuria/tessera.git
-```
-
-Then reference the package by path from your own `Package.swift`:
+Add the package to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(path: "../tessera/KalshiKit")
+    .package(url: "https://github.com/IvanKuria/KalshiKit.git", from: "0.1.0")
 ],
 targets: [
     .target(
@@ -37,13 +28,14 @@ targets: [
 ]
 ```
 
-Or in Xcode: **File ▸ Add Package Dependencies… ▸ Add Local…** and select the
-`tessera/KalshiKit` folder.
+Or in Xcode: **File ▸ Add Package Dependencies…** and paste
+`https://github.com/IvanKuria/KalshiKit.git`.
 
-> **Want it as a standalone package?** Open an issue on the
-> [tessera repo](https://github.com/ivankuria/tessera/issues). Splitting KalshiKit
-> into its own repository (so `.package(url:)` works) is planned — it's already
-> dependency-free and self-contained.
+> **Where the code lives.** KalshiKit is developed in the
+> [`tessera`](https://github.com/IvanKuria/tessera) monorepo (under `KalshiKit/`)
+> alongside the Tessera app, and published to the standalone
+> [`KalshiKit`](https://github.com/IvanKuria/KalshiKit) repo for distribution. The
+> monorepo is canonical; please file issues and PRs there.
 
 ## Quick start (keyless — market data)
 
