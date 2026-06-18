@@ -69,11 +69,16 @@ final class EventMatcherTests: XCTestCase {
         XCTAssertEqual(pairs[0].polymarket.id, "close")
     }
 
-    // Category mismatch prunes the pair before scoring.
-    func testCategoryPruning() {
-        let k = kalshi("Will the Fed cut rates in 2026?", category: "Economics")
-        let p = poly("Will the Fed cut rates in 2026?", category: "Sports")
-        XCTAssertFalse(EventMatcher.compatible(k, p, config: MatchConfig()))
+    // Different title TOPICS prune the pair before scoring (venue categories don't
+    // align across Kalshi/Polymarket, so we bucket by title keywords instead).
+    func testTopicPruning() {
+        let econ = kalshi("Will the Fed cut rates in 2026?")
+        let politics = poly("Will the Democrats win the Senate in 2026?")
+        XCTAssertFalse(EventMatcher.compatible(econ, politics, config: MatchConfig()))
+        // Same topic (both crypto) is NOT pruned on topic grounds.
+        let btcA = kalshi("Will Bitcoin top $150k in 2026?")
+        let btcB = poly("Will BTC reach $150,000 this year?")
+        XCTAssertTrue(EventMatcher.compatible(btcA, btcB, config: MatchConfig()))
     }
 
     // Close-date window prunes far-apart resolution dates.

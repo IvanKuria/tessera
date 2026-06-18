@@ -24,7 +24,7 @@ struct ArbSettings: Sendable, Equatable {
     /// Cap on Kalshi binary markets pulled into the match (cost control).
     var maxKalshiMarkets: Int = 1_200
     /// Cap on Polymarket open markets pulled into the match (cost control).
-    var maxPolymarketMarkets: Int = 1_500
+    var maxPolymarketMarkets: Int = 2_400 // Gamma offset-paginates up to ~2.4k (422 beyond)
     /// HARD cap on matched pairs we confirm books for per pass (the expensive,
     /// rare step — the Scanner's `maxConfirmTickers` lesson, scaled for 3 book
     /// fetches per pair across two venues).
@@ -32,7 +32,7 @@ struct ArbSettings: Sendable, Equatable {
     /// Bounded fan-out: at most this many venues' books fetched concurrently.
     var maxConcurrentFetches: Int = 6
     /// Minimum match confidence (0…1) for a pair to be confirmed.
-    var minConfidence: Decimal = Decimal(string: "0.62")!
+    var minConfidence: Decimal = Decimal(string: "0.45")!
     /// Minimum net-of-fee edge per contract (cents) for an opportunity to surface.
     var minNetEdgeCents: Int = 1
     /// Max displayed rows.
@@ -183,9 +183,19 @@ final class ArbStore {
                     let rules = [market.yesSubTitle, market.subtitle, event.subTitle]
                         .compactMap { $0 }
                         .first { !$0.isEmpty }
+                    // Build a SPECIFIC title for matching: multi-outcome Kalshi
+                    // events split into binary markets all share the generic event
+                    // question, so fold in this market's own outcome label (e.g.
+                    // event "Who will be next AG?" + outcome "Pam Bondi") so it can
+                    // align with Polymarket's specific question.
+                    let outcomeLabel = (market.yesSubTitle ?? market.subtitle ?? "")
+                        .trimmingCharacters(in: .whitespaces)
+                    let isGeneric = outcomeLabel.isEmpty
+                        || outcomeLabel.caseInsensitiveCompare("Yes") == .orderedSame
+                    let matchTitle = isGeneric ? event.title : "\(event.title) \(outcomeLabel)"
                     refs.append(VenueMarketRef(
                         id: market.ticker,
-                        title: event.title,
+                        title: matchTitle,
                         category: event.category,
                         closeDate: market.closeDate,
                         outcomes: ["Yes", "No"],
@@ -202,7 +212,8 @@ final class ArbStore {
     /// Polymarket open Gamma markets → `VenueMarketRef`(polymarket:) plus an
     /// id→slug map for deep-linking. Capped at `maxPolymarketMarkets`.
     private func discoverPolymarket() async throws -> ([VenueMarketRef], [String: String]) {
-        let pageLimit = 500
+        // Gamma caps `limit` at 100 server-side, so page size is 100 regardless.
+        let pageLimit = 100
         let maxPages = max(1, (settings.maxPolymarketMarkets + pageLimit - 1) / pageLimit)
         let markets = try await gamma.allOpenMarkets(pageLimit: pageLimit, maxPages: maxPages)
         var refs: [VenueMarketRef] = []

@@ -95,11 +95,12 @@ public enum EventMatcher {
     // MARK: Pruning
 
     static func compatible(_ a: VenueMarketRef, _ b: VenueMarketRef, config: MatchConfig) -> Bool {
-        // Category bucket: only prune when BOTH categories are known and clearly
-        // incompatible. Unknown category is permissive.
-        if let ca = a.category, let cb = b.category {
-            if categoryBucket(ca) != categoryBucket(cb) { return false }
-        }
+        // Topic gate from TITLE keywords. Venue category taxonomies don't align
+        // across Kalshi and Polymarket (Polymarket has no real category), so a
+        // category-equality prune rejects everything. Instead bucket each title by
+        // keyword and prune only when both map to a known, DIFFERENT topic; an
+        // unknown topic on either side is permissive (falls through to scoring).
+        if let ta = topicBucket(a.title), let tb = topicBucket(b.title), ta != tb { return false }
         // Close-date window: only prune when BOTH dates are known.
         if let da = a.closeDate, let db = b.closeDate {
             if abs(da.timeIntervalSince(db)) > config.closeDateWindow { return false }
@@ -107,8 +108,19 @@ public enum EventMatcher {
         return true
     }
 
-    private static func categoryBucket(_ raw: String) -> String {
-        raw.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+    /// Coarse topic bucket from a market title's keywords, shared across venues.
+    /// Returns nil (permissive) when no keyword matches.
+    static func topicBucket(_ title: String) -> String? {
+        let t = " " + title.lowercased() + " "
+        func has(_ ws: [String]) -> Bool { ws.contains { t.contains($0) } }
+        if has(["bitcoin", "btc", "ethereum", " eth ", "crypto", "solana", " xrp", "dogecoin", "stablecoin"]) { return "crypto" }
+        if has(["fed ", "interest rate", "rate cut", "rate hike", " cpi", "inflation", " gdp", "recession", "jobs report", "unemployment", "fomc"]) { return "econ" }
+        if has(["election", "president", "senate", "congress", "governor", "nominee", "primary", "democrat", "republican", "parliament", "prime minister", "attorney general", "supreme court", "impeach"]) { return "politics" }
+        if has(["super bowl", "world cup", " nba", " nfl", " mlb", " nhl", "premier league", "champions league", " vs.", "o/u", "match", "tournament", "playoff", "ballon"]) { return "sports" }
+        if has(["gpt", "openai", "ai model", " apple", "tesla", "nvidia", "spacex", "iphone", " gta", "launch", "release"]) { return "tech" }
+        if has(["temperature", "weather", " rain", " snow", "hurricane", "°c", "°f"]) { return "weather" }
+        if has(["movie", "box office", "oscar", "grammy", " album", "spotify", "taylor swift", "netflix", "rotten tomatoes"]) { return "entertainment" }
+        return nil
     }
 
     // MARK: Scoring

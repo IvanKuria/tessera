@@ -233,18 +233,28 @@ public struct GammaService: Sendable {
         return try await client.get([PMMarket].self, url)
     }
 
-    /// Walks the `/markets` endpoint to gather all open markets, paginating by
-    /// `pageLimit` until a short/empty page or `maxPages` is reached.
-    ///
-    /// `maxPages` is a safety valve against runaway pagination.
-    public func allOpenMarkets(pageLimit: Int = 500, maxPages: Int = 40) async throws -> [PMMarket] {
+    /// Walks the `/markets` endpoint to gather open markets, paginating until an
+    /// EMPTY page or `maxPages` is reached. NOTE: Gamma caps `limit` at 100
+    /// server-side, so a returned page shorter than the requested `pageLimit` is
+    /// NOT the end of data — only an empty page is. Offset advances by the actual
+    /// page size. `maxPages` is the safety valve against runaway pagination.
+    public func allOpenMarkets(pageLimit: Int = 100, maxPages: Int = 40) async throws -> [PMMarket] {
         var all: [PMMarket] = []
         var offset = 0
-        for _ in 0..<maxPages {
-            let page = try await markets(closed: false, limit: pageLimit, offset: offset)
-            all.append(contentsOf: page)
-            if page.count < pageLimit { break }
-            offset += pageLimit
+        for page in 0..<maxPages {
+            do {
+                let result = try await markets(closed: false, limit: pageLimit, offset: offset)
+                if result.isEmpty { break }
+                all.append(contentsOf: result)
+                offset += result.count
+            } catch {
+                // Gamma rejects deep offset pagination with HTTP 422 ("offset too
+                // large"). Treat any page error AFTER the first as the end of the
+                // walk and return what we gathered, rather than failing the caller;
+                // only a failure on the very first page propagates (real outage).
+                if page == 0 { throw error }
+                break
+            }
         }
         return all
     }

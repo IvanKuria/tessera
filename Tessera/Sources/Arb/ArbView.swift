@@ -155,11 +155,19 @@ struct ArbView: View {
             Text("No cross-venue arbitrage right now — and that's normal.")
                 .font(Theme.ui(15, .semibold)).foregroundStyle(Theme.text)
                 .multilineTextAlignment(.center)
-            Text("We match the same real-world event on Kalshi and Polymarket and surface it only when buying both sides clears a guaranteed payout after each venue's fees. These windows are rare and brief. We keep scanning.")
+            Text("We match the same real-world event on Kalshi and Polymarket and surface it only when buying both sides clears a profit after each venue's fees. These windows are rare and brief. We keep scanning.")
                 .font(Theme.ui(12)).foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 380)
                 .fixedSize(horizontal: false, vertical: true)
+            if store.lastScan != nil {
+                Text("Last pass: \(store.coverage.kalshiMarkets) Kalshi · \(store.coverage.polymarketMarkets) Polymarket markets → \(store.coverage.matchedPairs) matched events, \(store.coverage.pairsConfirmed) priced. None clear a profit right now.")
+                    .font(Theme.num(11)).foregroundStyle(Theme.textTertiary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 420)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.vertical, 60)
