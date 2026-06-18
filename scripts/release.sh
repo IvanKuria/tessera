@@ -60,6 +60,7 @@ xcodebuild -project "$APP_DIR/$APP_NAME.xcodeproj" \
   -scheme "$SCHEME" -configuration Release \
   -archivePath "$ARCHIVE" \
   -destination 'generic/platform=macOS' \
+  -allowProvisioningUpdates \
   DEVELOPMENT_TEAM="$TEAM_ID" \
   CODE_SIGN_STYLE=Automatic \
   archive | grep -iE "error:|ARCHIVE SUCCEEDED|warning: .*sign" || true
@@ -80,13 +81,17 @@ PLIST
 xcodebuild -exportArchive -archivePath "$ARCHIVE" \
   -exportPath "$EXPORT_DIR" \
   -exportOptionsPlist "$BUILD/export-options.plist" \
+  -allowProvisioningUpdates \
   | grep -iE "error:|EXPORT SUCCEEDED" || true
 [ -d "$APP_PATH" ] || fail "export failed — no $APP_PATH"
 
 # --- Verify signature + hardened runtime ------------------------------------
 bold "▸ Verifying signature"
 codesign --verify --deep --strict --verbose=2 "$APP_PATH" || fail "codesign verify failed"
-codesign -dvv "$APP_PATH" 2>&1 | grep -q "flags=.*runtime" || fail "hardened runtime not enabled"
+# Capture first, then match — piping into `grep -q` under `set -o pipefail` makes
+# codesign die with SIGPIPE and falsely reports failure.
+HR_INFO="$(codesign -dvv "$APP_PATH" 2>&1 || true)"
+[[ "$HR_INFO" == *"(runtime)"* ]] || fail "hardened runtime not enabled"
 echo "  signature + hardened runtime  ✓"
 
 VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Contents/Info.plist")"

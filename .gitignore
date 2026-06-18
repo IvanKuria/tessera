@@ -25,3 +25,4 @@ Tessera/build/
 
 # Playwright MCP scratch output (browser console logs / page dumps)
 .playwright-mcp/
+Tessera/release-build/
