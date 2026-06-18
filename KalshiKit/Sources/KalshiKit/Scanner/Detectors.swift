@@ -165,3 +165,40 @@ public enum LadderMonotonicityDetector: Detector {
         )
     }
 }
+
+public enum SpreadStaleDetector: Detector {
+    public static let detectorID = "spreadStale"
+    public static func scan(_ snapshot: ScanSnapshot) -> [Opportunity] {
+        var out: [Opportunity] = []
+        for event in snapshot.events {
+            for m in event.markets {
+                if let a = m.bestYesAskCents, let b = m.bestYesBidCents {
+                    let spread = a - b
+                    if spread >= snapshot.config.wideSpreadCents {
+                        out.append(flag(.edge(.wideSpread), event, m, snapshot, [.wideSpread(cents: spread)], confidence: Decimal(min(spread, 30)) / 30))
+                    }
+                }
+                let age = snapshot.now.timeIntervalSince(m.lastUpdate)
+                if age >= snapshot.config.staleQuoteSeconds {
+                    out.append(flag(.edge(.staleQuote), event, m, snapshot, [.staleQuote(ageSeconds: age)], confidence: Decimal(string: "0.3")!))
+                }
+            }
+        }
+        return out
+    }
+    private static func flag(_ kind: OpportunityKind, _ e: EventSnapshot, _ m: MarketSnapshot, _ s: ScanSnapshot, _ w: [ScannerWarning], confidence: Decimal) -> Opportunity {
+        let leg = Leg(marketTicker: m.ticker, side: .yes, priceCents: m.bestYesAskCents ?? 50, qty: 0, feeCents: 0, depthAvailable: 0, vwapCents: 0)
+        return Opportunity(id: Opportunity.makeID(kind: kind, legs: [leg]), kind: kind, eventTicker: e.eventTicker,
+            seriesTicker: e.seriesTicker, title: e.title, category: e.category, legs: [leg],
+            grossEdgeCents: 0, totalFeesCents: 0, netEdgeCents: 0, netEdgePerContractCents: 0, netEdgePct: 0,
+            maxContractsAtPositiveEdge: 0, capitalRequiredCents: 0, maxLossIfLeggedOutCents: 0,
+            daysToSettlement: ScannerMath.daysToSettlement(expiration: m.expiration, now: s.now), annualizedPct: 0,
+            freshnessTimestamp: m.lastUpdate, freshnessAgeSeconds: s.now.timeIntervalSince(m.lastUpdate),
+            confidence: confidence, leggingRisk: .none, warnings: w, isLive: false)
+    }
+}
+
+public enum BookIntegrityCheck: Detector {
+    public static let detectorID = "bookIntegrity"
+    public static func scan(_ snapshot: ScanSnapshot) -> [Opportunity] { [] }  // warnings surfaced via store logs; no tradable rows
+}
