@@ -32,12 +32,31 @@ final class ScannerStore {
     private(set) var phase: ScanPhase = .idle
     private(set) var coverage = ScanCoverage()
     private(set) var lastError: String?
+    /// Live socket state, surfaced so the UI can show a Live / Reconnecting / Offline badge.
+    private(set) var connection: SocketConnectionState = .disconnected
     var settings: ScannerSettings
 
     private let account: AccountStore
     private let scanClient = KalshiClient(environment: .production)
     private var scanLoop: Task<Void, Never>?
     var oppsByID: [String: Opportunity] = [:]
+
+    // MARK: - Live revalue infra (Slice 4)
+
+    /// The market-data socket for the current watch set; rebuilt only when the
+    /// watch set actually changes (see `restartFeed`).
+    private var socket: KalshiSocket?
+    private var consumeTask: Task<Void, Never>?
+    /// The priced snapshot (WITH fetched books) that produced each surfaced
+    /// event's opportunities — keyed by event ticker. The live revalue rebuilds
+    /// from these so it keeps the last REST depth ladders.
+    private var surfacedEvents: [String: EventSnapshot] = [:]
+    /// market ticker → the set of event tickers whose snapshots reference it, so
+    /// a ticker update can find which events to re-price.
+    private var marketToEvents: [String: Set<String>] = [:]
+    /// The last watch set we (re)built the socket for — sorted leg tickers. Used
+    /// to avoid thrashing the socket on every 45s pass when nothing changed.
+    private var lastWatchSet: [String] = []
 
     init(account: AccountStore) {
         self.account = account
@@ -60,6 +79,11 @@ final class ScannerStore {
     func stop() {
         scanLoop?.cancel()
         scanLoop = nil
+        consumeTask?.cancel(); consumeTask = nil
+        Task { [socket] in await socket?.disconnect() }
+        socket = nil
+        lastWatchSet = []
+        connection = .disconnected
     }
 
     func refreshNow() { Task { await runScanPass() } }
@@ -124,8 +148,9 @@ final class ScannerStore {
             let pricedSnaps = ScanShaping.eventSnapshots(from: events, books: books, now: now)
             let priced = DetectionEngine.scan(ScanSnapshot(events: pricedSnaps, now: now, config: cfg))
 
-            // Stage 6: publish.
-            publish(priced, now: now)
+            // Stage 6: publish + (re)wire the live feed to the new watch set.
+            publish(priced, snaps: pricedSnaps, now: now)
+            restartFeed()
             lastScan = now
             lastError = nil
             if coverage.booksFailed > 0 { phase = .degraded("\(coverage.booksFailed) books unavailable") }
@@ -162,13 +187,36 @@ final class ScannerStore {
         }
     }
 
-    private func publish(_ priced: [Opportunity], now: Date) {
+    private func publish(_ priced: [Opportunity], snaps: [EventSnapshot], now: Date) {
         var next: [String: Opportunity] = [:]
         for var o in priced {
             o.freshnessAgeSeconds = now.timeIntervalSince(o.freshnessTimestamp)
             next[o.id] = o
         }
         oppsByID = next
+
+        // Rebuild the live-revalue caches from the priced snapshots that actually
+        // produced surfaced opportunities. Only those events ever receive ticker
+        // updates, so we don't cache the whole market.
+        let surfacedTickers = Set(priced.map(\.eventTicker))
+        var events: [String: EventSnapshot] = [:]
+        var marketIndex: [String: Set<String>] = [:]
+        for snap in snaps where surfacedTickers.contains(snap.eventTicker) {
+            events[snap.eventTicker] = snap
+            for m in snap.markets {
+                marketIndex[m.ticker, default: []].insert(snap.eventTicker)
+            }
+        }
+        surfacedEvents = events
+        marketToEvents = marketIndex
+
+        reproject()
+    }
+
+    /// Projects `oppsByID` into the `locks`/`edges` lanes the UI binds to. Shared
+    /// by the REST publish path and the live ticker-revalue path so both apply the
+    /// same ranking + flag-edge cap.
+    private func reproject() {
         let cfg = makeConfig()
         let all = DetectionEngine.ranked(Array(oppsByID.values), config: cfg)
         locks = settings.locksEnabled ? all.filter { $0.lane == .lock } : []
@@ -183,6 +231,137 @@ final class ScannerStore {
             .prefix(Self.maxFlagEdges)
         edges = settings.edgesEnabled ? ladderEdges + Array(flagEdges) : []
     }
+
+    // MARK: - Live revalue (Task 13)
+
+    /// Distinct leg tickers across all currently-surfaced opportunities — the set
+    /// of markets we need live ticker updates for.
+    private var watchedMarkets: [String] {
+        var set = Set<String>()
+        for o in oppsByID.values { for l in o.legs { set.insert(l.marketTicker) } }
+        return set.sorted()
+    }
+
+    /// Tears down and rebuilds the socket for the current watch set — but ONLY when
+    /// the watch set actually changed, so a 45s pass that surfaces the same markets
+    /// doesn't thrash the connection. Adapted from `AlertEngine.restartFeed`.
+    private func restartFeed() {
+        let markets = watchedMarkets
+        guard markets != lastWatchSet else { return }
+        lastWatchSet = markets
+
+        consumeTask?.cancel()
+        let old = socket
+        socket = nil
+        Task { await old?.disconnect() }
+
+        guard !markets.isEmpty else { connection = .disconnected; return }
+
+        var channels: [SocketChannel] = [.ticker]
+        if settings.useOrderbookDelta { channels.append(.orderbookDelta) }
+
+        let sock = KalshiSocket(environment: account.kalshiEnvironment, signer: account.liveSigner)
+        socket = sock
+        connection = .connecting
+        consumeTask = Task { [weak self] in
+            let events = await sock.events()
+            await sock.connect()
+            await sock.subscribe(to: channels, markets: markets)
+            for await event in events {
+                guard let self else { break }
+                await self.handle(event)
+            }
+        }
+    }
+
+    private func handle(_ event: SocketEvent) {
+        switch event {
+        case .connected:
+            connection = .connected
+        case .disconnected:
+            // Do NOT expire opps on disconnect — the REST snapshot stays valid.
+            connection = .disconnected
+        case .ticker(let t):
+            applyTicker(t)
+        default:
+            break
+        }
+    }
+
+    /// Re-prices the events that reference a just-ticked market off the cached
+    /// REST snapshots (keeping their depth ladders), reconciles the result into
+    /// `oppsByID`, and re-projects the lanes.
+    private func applyTicker(_ t: TickerUpdate) {
+        guard let ticker = t.marketTicker else { return }
+        guard let eventTickers = marketToEvents[ticker], !eventTickers.isEmpty else { return }
+
+        let now = Date()
+        var changed = false
+        for eventTicker in eventTickers {
+            guard let snap = surfacedEvents[eventTicker] else { continue }
+            guard let idx = snap.markets.firstIndex(where: { $0.ticker == ticker }) else { continue }
+
+            // Build an updated MarketSnapshot: prefer explicit yes bid/ask from the
+            // payload; otherwise nudge both quotes toward the new last price so a
+            // last-only tick still moves the valuation. Keep the last REST ladders.
+            let old = snap.markets[idx]
+            let newAsk = t.yesAsk ?? centsOf(t.yesAskDollars) ?? t.lastCents ?? old.bestYesAskCents
+            let newBid = t.yesBid ?? centsOf(t.yesBidDollars) ?? t.lastCents ?? old.bestYesBidCents
+            let updatedMarket = MarketSnapshot(
+                ticker: old.ticker,
+                seriesTicker: old.seriesTicker,
+                bestYesAskCents: newAsk,
+                bestYesBidCents: newBid,
+                yesAskLadder: old.yesAskLadder,
+                noAskLadder: old.noAskLadder,
+                strike: old.strike,
+                expiration: old.expiration,
+                lastUpdate: now
+            )
+            var markets = snap.markets
+            markets[idx] = updatedMarket
+            let updatedEvent = EventSnapshot(
+                eventTicker: snap.eventTicker,
+                seriesTicker: snap.seriesTicker,
+                title: snap.title,
+                category: snap.category,
+                mutuallyExclusive: snap.mutuallyExclusive,
+                markets: markets
+            )
+            surfacedEvents[eventTicker] = updatedEvent
+
+            // Re-detect just this event with the refreshed quote.
+            let repriced = DetectionEngine.scan(
+                ScanSnapshot(events: [updatedEvent], now: now, config: makeConfig())
+            )
+
+            // Reconcile: update surviving opps in place (live + fresh); drop opps
+            // from this event that detection no longer returns (their edge died).
+            let repricedByID = Dictionary(uniqueKeysWithValues: repriced.map { ($0.id, $0) })
+            let previousIDs = oppsByID.values
+                .filter { $0.eventTicker == eventTicker }
+                .map(\.id)
+            for var o in repriced {
+                o.isLive = true
+                o.freshnessTimestamp = now
+                o.freshnessAgeSeconds = 0
+                oppsByID[o.id] = o
+                changed = true
+            }
+            for id in previousIDs where repricedByID[id] == nil {
+                oppsByID.removeValue(forKey: id)
+                changed = true
+            }
+        }
+
+        guard changed else { return }
+        reproject()
+        // The watch set may have shrunk (an edge died). Re-wire if so.
+        restartFeed()
+    }
+
+    /// `KalshiDecimal` dollars → integer cents (Decimal half-up, no Double error).
+    private func centsOf(_ d: KalshiDecimal?) -> Int? { d?.centsRounded }
 
     /// Lock + ladder opportunities need real orderbook depth to price net edge;
     /// spread/stale flags are quote-only signals.
