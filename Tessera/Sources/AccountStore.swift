@@ -62,7 +62,13 @@ final class AccountStore {
 
     // MARK: - Init
 
+    private static let envKey = "tessera.environment"
+
     init() {
+        // Restore the last-used environment so it survives relaunch.
+        if UserDefaults.standard.string(forKey: Self.envKey) == "production" {
+            env = .production
+        }
         loadFromKeychain()
     }
 
@@ -147,6 +153,7 @@ final class AccountStore {
     func setEnv(_ newEnv: Env) {
         guard newEnv != env else { return }
         env = newEnv
+        UserDefaults.standard.set(newEnv == .production ? "production" : "demo", forKey: Self.envKey)
 
         guard let creds = credentials else { return }
         do {

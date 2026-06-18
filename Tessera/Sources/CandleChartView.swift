@@ -37,7 +37,11 @@ struct CandleChartView: View {
         MagnifyGesture()
             .onChanged { value in
                 let cur = currentBounds
-                if pinchBase == nil { pinchBase = ((cur.lo + cur.hi) / 2, (cur.hi - cur.lo) / 2) }
+                if pinchBase == nil {
+                    // Zoom around the hovered candle (cursor) if any, else the center.
+                    let anchor = selectedID.map(Double.init) ?? (cur.lo + cur.hi) / 2
+                    pinchBase = (min(max(anchor, cur.lo), cur.hi), (cur.hi - cur.lo) / 2)
+                }
                 guard let base = pinchBase else { return }
                 let full = fullBounds
                 let maxHalf = (full.hi - full.lo) / 2
@@ -248,9 +252,9 @@ struct CandleChartView: View {
     @ViewBuilder private var chartArea: some View {
         if hasData {
             VStack(spacing: 6) {
-                priceChart.frame(height: 320)
+                priceChart.frame(height: 320).clipped()
                 if showVolume {
-                    volumeChart.frame(height: 80)
+                    volumeChart.frame(height: 80).clipped()
                 }
             }
         } else if isLoading {
@@ -396,7 +400,7 @@ struct CandleChartView: View {
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                     .annotation(
                         position: .top,
-                        overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
+                        overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
                     ) {
                         tooltip(c)
                     }

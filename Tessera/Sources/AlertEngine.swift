@@ -78,6 +78,14 @@ final class AlertEngine {
         restartFeed()
     }
 
+    /// Replaces an existing rule in place (preserves id + order).
+    func updateRule(_ rule: AlertRule) {
+        guard let i = rules.firstIndex(where: { $0.id == rule.id }) else { return }
+        rules[i] = rule
+        persist()
+        restartFeed()
+    }
+
     private func persist() {
         AppGroup.write(rules, to: AppGroup.alertRulesURL)
     }
