@@ -20,11 +20,39 @@ struct CandleChartView: View {
     @State private var logScale = false
     @State private var selectedID: Int?
 
-    // Drag-to-zoom
-    @State private var zoomMode = false
+    // Pinch-to-zoom (trackpad)
     @State private var zoomRange: ClosedRange<Int>?
-    @State private var dragStartX: CGFloat?
-    @State private var dragCurrentX: CGFloat?
+    @State private var pinchBase: (center: Double, half: Double)?
+
+    private var fullBounds: (lo: Double, hi: Double) {
+        (Double((candles.first?.id ?? 0) - 1), Double((candles.last?.id ?? 1) + 1))
+    }
+    private var currentBounds: (lo: Double, hi: Double) {
+        if let z = zoomRange { return (Double(z.lowerBound), Double(z.upperBound)) }
+        return fullBounds
+    }
+
+    /// Pinch on the trackpad to zoom the x-window around its center.
+    private var magnify: some Gesture {
+        MagnifyGesture()
+            .onChanged { value in
+                let cur = currentBounds
+                if pinchBase == nil { pinchBase = ((cur.lo + cur.hi) / 2, (cur.hi - cur.lo) / 2) }
+                guard let base = pinchBase else { return }
+                let full = fullBounds
+                let maxHalf = (full.hi - full.lo) / 2
+                var half = min(max(base.half / max(0.2, value.magnification), 2), maxHalf)
+                var lo = base.center - half, hi = base.center + half
+                if lo < full.lo { hi += full.lo - lo; lo = full.lo }
+                if hi > full.hi { lo -= hi - full.hi; hi = full.hi }
+                lo = max(lo, full.lo); hi = min(hi, full.hi)
+                let loi = Int(lo.rounded()), hii = Int(hi.rounded())
+                guard hii - loi >= 2 else { return }
+                zoomRange = (loi <= Int(full.lo.rounded()) && hii >= Int(full.hi.rounded())) ? nil : loi...hii
+                _ = half
+            }
+            .onEnded { _ in pinchBase = nil }
+    }
 
     // Alert composer
     @State private var showAlertBar = false
@@ -195,7 +223,6 @@ struct CandleChartView: View {
         let current = candles.last?.close ?? 0
         let base = candles.first?.open ?? current
         let change = current - base
-        let pct = base > 0 ? change / base * 100 : 0
         let up = change >= 0
         return HStack(alignment: .firstTextBaseline, spacing: 9) {
             Text("\(Int(current.rounded()))¢")
@@ -203,7 +230,7 @@ struct CandleChartView: View {
             HStack(spacing: 4) {
                 Image(systemName: up ? "arrow.up.right" : "arrow.down.right")
                     .font(.system(size: 11, weight: .bold))
-                Text("\(changeString(change)) (\(up ? "+" : "−")\(String(format: "%.1f", abs(pct)))%)")
+                Text(changeString(change))   // points (¢); relative % is meaningless near 0¢
             }
             .font(Theme.num(13, .semibold)).foregroundStyle(up ? Theme.yes : Theme.no)
             Text("· \(timeframe.rawValue)").font(Theme.ui(12)).foregroundStyle(Theme.textTertiary)
@@ -247,9 +274,8 @@ struct CandleChartView: View {
             chip("Vol", isOn: showVolume) { showVolume.toggle() }
             chip("Spread", isOn: showSpread) { showSpread.toggle() }
             chip("Log", isOn: logScale) { logScale.toggle() }
-            chip("Zoom", isOn: zoomMode) { withAnimation { zoomMode.toggle() } }
             if zoomRange != nil {
-                chip("Reset", isOn: false) { withAnimation { zoomRange = nil; zoomMode = false } }
+                chip("Reset", isOn: false) { withAnimation { zoomRange = nil } }
             }
             chip("Alert", isOn: showAlertBar) {
                 if !showAlertBar {
@@ -408,51 +434,7 @@ struct CandleChartView: View {
             }
         }
         .chartXSelection(value: $selectedID)
-        .chartOverlay { proxy in
-            GeometryReader { geo in
-                if zoomMode, let anchor = proxy.plotFrame {
-                    let plot = geo[anchor]
-                    // Capture drags to select a zoom window (hover crosshair is
-                    // suppressed only while Zoom mode is armed).
-                    Rectangle().fill(Color.clear).contentShape(Rectangle())
-                        .gesture(
-                            DragGesture(minimumDistance: 4)
-                                .onChanged { v in
-                                    if dragStartX == nil { dragStartX = v.startLocation.x }
-                                    dragCurrentX = v.location.x
-                                }
-                                .onEnded { v in
-                                    let s = dragStartX ?? v.startLocation.x
-                                    let e = v.location.x
-                                    dragStartX = nil; dragCurrentX = nil
-                                    let lo = proxy.value(atX: min(s, e) - plot.minX, as: Int.self)
-                                    let hi = proxy.value(atX: max(s, e) - plot.minX, as: Int.self)
-                                    if let lo, let hi, hi - lo >= 2 {
-                                        withAnimation(.easeOut(duration: 0.2)) {
-                                            zoomRange = lo...hi
-                                            zoomMode = false
-                                        }
-                                    }
-                                }
-                        )
-                    if let s = dragStartX, let c = dragCurrentX {
-                        let x0 = min(s, c), x1 = max(s, c)
-                        Rectangle().fill(Theme.text.opacity(0.07))
-                            .overlay(Rectangle().stroke(Theme.textTertiary.opacity(0.45), lineWidth: 1))
-                            .frame(width: max(0, x1 - x0), height: plot.height)
-                            .position(x: (x0 + x1) / 2, y: plot.midY)
-                            .allowsHitTesting(false)
-                    } else {
-                        Text("Drag to zoom")
-                            .font(Theme.ui(11, .medium)).foregroundStyle(Theme.textTertiary)
-                            .padding(.horizontal, 8).padding(.vertical, 3)
-                            .background(Capsule().fill(Theme.surface.opacity(0.95)))
-                            .position(x: plot.midX, y: plot.minY + 14)
-                            .allowsHitTesting(false)
-                    }
-                }
-            }
-        }
+        .gesture(magnify)
     }
 
     // MARK: - Volume chart
