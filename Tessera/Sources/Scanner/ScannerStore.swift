@@ -41,6 +41,13 @@ final class ScannerStore {
     private var scanLoop: Task<Void, Never>?
     var oppsByID: [String: Opportunity] = [:]
 
+    // MARK: - Stickiness + alerts (Slice 6)
+
+    /// Edge-triggered, de-duplicated notifier (Task 18).
+    private let notifier = ScannerNotifier()
+    /// Opportunities the user explicitly tapped "Track & alert me" on (Task 19).
+    let tracked = TrackedStore()
+
     // MARK: - Live revalue infra (Slice 4)
 
     /// The market-data socket for the current watch set; rebuilt only when the
@@ -70,6 +77,8 @@ final class ScannerStore {
 
     func start() {
         guard scanLoop == nil else { return }
+        // Request notification permission once, like AlertEngine.
+        Task { [notifier] in await notifier.requestAuthorizationIfNeeded() }
         scanLoop = Task { [weak self] in
             while !Task.isCancelled {
                 await self?.runScanPass()
@@ -216,6 +225,20 @@ final class ScannerStore {
         marketToEvents = marketIndex
 
         reproject()
+        notifyFreshCrossings()
+    }
+
+    /// Fires edge-triggered notifications for every live opportunity, then prunes
+    /// the notifier's bookkeeping for ids that have left the scan. Cheap: a single
+    /// pass over `oppsByID` with O(1) work per opp. Called after a REST publish and
+    /// after a live ticker revalue — the two paths where net edge actually moves.
+    private func notifyFreshCrossings() {
+        let now = Date()
+        let trackedIDs = tracked.ids
+        for opp in oppsByID.values {
+            notifier.consider(opp, settings: settings, tracked: trackedIDs, now: now)
+        }
+        notifier.prune(keeping: Set(oppsByID.keys))
     }
 
     /// Projects `oppsByID` into the `locks`/`edges` lanes the UI binds to. Shared
@@ -361,6 +384,7 @@ final class ScannerStore {
 
         guard changed else { return }
         reproject()
+        notifyFreshCrossings()
         // The watch set may have shrunk (an edge died). Re-wire if so.
         restartFeed()
     }
@@ -417,6 +441,45 @@ final class ScannerStore {
         case .edge(.wideSpread), .edge(.staleQuote): return false
         }
     }
+
+    // MARK: - Daily digest (Task 20)
+
+    /// The day's best mispricings: top Locks by net edge + top Edges by confidence,
+    /// each carrying how long it has survived (freshness age). Honest, no hype.
+    func buildDigest(now: Date = Date()) -> ScannerDigest {
+        let live = Array(oppsByID.values)
+        let topLocks = live
+            .filter { $0.lane == .lock }
+            .sorted { $0.netEdgeCents > $1.netEdgeCents }
+            .prefix(5)
+            .map { DigestItem(opp: $0, now: now) }
+        let topEdges = live
+            .filter { $0.lane == .edge && !$0.isFlagOnly }
+            .sorted { $0.confidence > $1.confidence }
+            .prefix(5)
+            .map { DigestItem(opp: $0, now: now) }
+        return ScannerDigest(generatedAt: now, locks: Array(topLocks), edges: Array(topEdges))
+    }
+
+    /// Fires at most ONE digest notification per calendar day (cadence cap via a
+    /// stored last-digest date). Returns the digest it built so the UI can show it.
+    @discardableResult
+    func sendDigestIfDue(now: Date = Date()) -> ScannerDigest {
+        let digest = buildDigest(now: now)
+        guard settings.digestEnabled else { return digest }
+        let last = AppGroup.read(Date.self, from: AppGroup.scannerDigestURL)
+        if let last, Calendar.current.isDate(last, inSameDayAs: now) {
+            return digest // already sent today
+        }
+        Task { [notifier] in await notifier.requestAuthorizationIfNeeded() }
+        digest.postNotification()
+        AppGroup.write(now, to: AppGroup.scannerDigestURL)
+        return digest
+    }
+
+    /// Generates today's digest on demand (the "Generate today's digest" button)
+    /// WITHOUT touching the daily cadence cap — manual previews never count.
+    func previewDigest(now: Date = Date()) -> ScannerDigest { buildDigest(now: now) }
 
     private static let maxFlagEdges = 25
     /// Hard ceiling on orderbooks confirmed per pass — bounds cost + latency so a

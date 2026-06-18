@@ -52,6 +52,16 @@ enum AppGroup {
         containerURL.appending(path: "scanner-paper.json")
     }
 
+    /// File the scanner persists its explicitly-tracked opportunity ids to.
+    static var scannerTrackedURL: URL {
+        containerURL.appending(path: "scanner-tracked.json")
+    }
+
+    /// File the scanner persists its last daily-digest date to (cadence cap).
+    static var scannerDigestURL: URL {
+        containerURL.appending(path: "scanner-digest.json")
+    }
+
     /// Reads and decodes a Codable value from a shared file, or `nil` if absent
     /// or unreadable. Never throws — shared-state reads should degrade quietly.
     static func read<T: Decodable>(_ type: T.Type, from url: URL) -> T? {

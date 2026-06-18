@@ -22,5 +22,7 @@ struct ScannerSettings: Codable, Sendable, Equatable {
     var alertMinNetEdgeCents: Int = 5
     var alertCooldownSeconds: Int = 300
     var alertLocksOnly = false
+    /// Opt-in daily "Top mispricings" digest, cadence-capped to one notification/day.
+    var digestEnabled = false
     static let `default` = ScannerSettings()
 }
